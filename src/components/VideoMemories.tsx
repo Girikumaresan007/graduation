@@ -1,72 +1,20 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Film, Play, X, Volume2, VolumeX, Sparkles, Clock } from 'lucide-react';
+import { Film, Play, X, Clock } from 'lucide-react';
 import { VideoItem } from '../types';
-import { videoMemories, videoCategories } from '../data/videos';
+import { videoMemories } from '../data/videos';
 
 export const VideoMemories: React.FC = () => {
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
-
-  const filteredVideos = selectedCategory === 'All'
-    ? videoMemories
-    : videoMemories.filter((v) => v.category === selectedCategory);
 
   return (
     <section
       id="videos"
-      className="relative py-20 px-4 sm:px-6 md:px-8 max-w-6xl mx-auto overflow-hidden"
+      className="relative py-16 sm:py-20 px-4 sm:px-6 md:px-8 max-w-6xl mx-auto overflow-hidden"
     >
-      {/* Section Header */}
-      <div className="text-center max-w-3xl mx-auto mb-12">
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#0A1630] border border-[#D4AF37]/40 text-[#D4AF37] text-xs font-semibold tracking-[0.3em] uppercase mb-3 shadow-lg"
-        >
-          <Film className="w-3.5 h-3.5 text-[#D4AF37]" />
-          <span>Cinematic Reels</span>
-        </motion.div>
-
-        <motion.h2
-          initial={{ opacity: 0, y: 15 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-[#FDFCF0] mb-3"
-        >
-          THE MOMENTS THAT MADE US
-        </motion.h2>
-
-        <motion.p
-          initial={{ opacity: 0, y: 15 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-sm sm:text-base text-[#CBD5E1] font-light max-w-xl mx-auto"
-        >
-          Relive our college days, flash mobs, tour songs, and the bittersweet final graduation cap toss.
-        </motion.p>
-      </div>
-
-      {/* Video Category Filter Tabs */}
-      <div className="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto pb-4 mb-10 no-scrollbar">
-        {videoCategories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setSelectedCategory(cat)}
-            className={`px-4 py-2 rounded-lg text-xs font-semibold tracking-[0.2em] uppercase transition-all duration-200 shrink-0 cursor-pointer ${selectedCategory === cat ? 'bg-[#D4AF37] text-[#050B18] font-bold shadow-lg shadow-[#D4AF37]/20' : 'bg-[#0A1630] text-[#CBD5E1] border border-[#D4AF37]/20 hover:border-[#D4AF37]/40'}`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
-
-      {/* Video Cards Grid */}
+      {/* Video Cards Grid - Clean Video Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredVideos.map((video, idx) => (
+        {videoMemories.map((video, idx) => (
           <motion.div
             key={video.id}
             initial={{ opacity: 0, y: 20 }}
@@ -74,7 +22,7 @@ export const VideoMemories: React.FC = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: idx * 0.1 }}
             onClick={() => setActiveVideo(video)}
-            className="group relative rounded-xl overflow-hidden bg-[#0A1630] border border-[#D4AF37]/25 hover:border-[#D4AF37]/60 shadow-xl cursor-pointer transition-all duration-300 hover:-translate-y-1.5 flex flex-col"
+            className="group relative rounded-2xl overflow-hidden bg-[#0A1630] border border-[#D4AF37]/25 hover:border-[#D4AF37]/60 shadow-xl cursor-pointer transition-all duration-300 hover:-translate-y-1.5 flex flex-col"
           >
             {/* Poster Thumbnail */}
             <div className="relative aspect-video w-full overflow-hidden bg-black">
@@ -143,7 +91,6 @@ export const VideoMemories: React.FC = () => {
               onClick={(e) => e.stopPropagation()}
               className="relative max-w-4xl w-full bg-[#0A1630] border border-[#D4AF37]/40 rounded-2xl overflow-hidden shadow-2xl"
             >
-              {/* Close Button */}
               <button
                 onClick={() => setActiveVideo(null)}
                 className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/70 text-[#FDFCF0] hover:text-[#D4AF37] transition-colors border border-white/20"
@@ -152,7 +99,6 @@ export const VideoMemories: React.FC = () => {
                 <X className="w-5 h-5" />
               </button>
 
-              {/* Video Player */}
               <div className="relative aspect-video w-full bg-black">
                 <video
                   src={activeVideo.videoUrl}
@@ -162,26 +108,6 @@ export const VideoMemories: React.FC = () => {
                   playsInline
                   className="w-full h-full object-contain"
                 />
-              </div>
-
-              {/* Video Details */}
-              <div className="p-6">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs uppercase tracking-[0.25em] px-2.5 py-0.5 rounded-full bg-[#D4AF37]/20 text-[#D4AF37] border border-[#D4AF37]/30 font-semibold">
-                    {activeVideo.category}
-                  </span>
-                  <span className="text-xs text-[#94A3B8]">
-                    Recorded {activeVideo.year}
-                  </span>
-                </div>
-
-                <h3 className="font-serif-title text-2xl font-bold text-[#FDFCF0] mb-2">
-                  {activeVideo.title}
-                </h3>
-
-                <p className="text-xs sm:text-sm text-[#CBD5E1] font-light leading-relaxed">
-                  {activeVideo.description}
-                </p>
               </div>
             </motion.div>
           </motion.div>

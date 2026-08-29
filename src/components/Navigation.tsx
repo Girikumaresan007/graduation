@@ -112,8 +112,6 @@ export const Navigation: React.FC<NavigationProps> = () => {
     { label: 'Timeline', href: '#timeline' },
     { label: 'Memories', href: '#memories' },
     { label: 'Videos', href: '#videos' },
-    { label: 'People', href: '#people' },
-    { label: 'Time Capsule', href: '#create-memory' },
     { label: 'Farewell', href: '#farewell' }
   ];
 

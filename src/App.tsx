@@ -7,12 +7,10 @@ import { ThreeMemoryScene } from './components/ThreeMemoryScene';
 import { CollegeStory } from './components/CollegeStory';
 import { FourYearTimeline } from './components/FourYearTimeline';
 import { MemoryGallery } from './components/MemoryGallery';
-import { VideoMemories } from './components/VideoMemories';
+import { GalleryPage } from './components/GalleryPage';
 import { MemoryWall } from './components/MemoryWall';
-import { PeopleSection } from './components/PeopleSection';
-import { CreateMemory } from './components/CreateMemory';
+import { MemoriesPage } from './components/MemoriesPage';
 import { GraduationCelebration } from './components/GraduationCelebration';
-import { QRMemorySection } from './components/QRMemorySection';
 import { FarewellSection } from './components/FarewellSection';
 import { EasterEggsModal } from './components/EasterEggsModal';
 
@@ -20,6 +18,38 @@ export default function App() {
   const [introFinished, setIntroFinished] = useState(false);
   const [activeEgg, setActiveEgg] = useState<{ title: string; message: string; year: string } | null>(null);
   const [easterEggClicks, setEasterEggClicks] = useState<Record<string, number>>({});
+  const [currentPath, setCurrentPath] = useState<string>(() => window.location.pathname);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPath(window.location.pathname);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const navigateToGallery = () => {
+    window.history.pushState({}, '', '/gallery');
+    setCurrentPath('/gallery');
+    window.scrollTo(0, 0);
+  };
+
+  const navigateToMemories = () => {
+    window.history.pushState({}, '', '/memories');
+    setCurrentPath('/memories');
+    window.scrollTo(0, 0);
+  };
+
+  const navigateToHome = () => {
+    window.history.pushState({}, '', '/#memories');
+    setCurrentPath('/');
+    setTimeout(() => {
+      const el = document.getElementById('memories');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 50);
+  };
 
   const handleYearEasterEgg = (year: string) => {
     const nextCount = (easterEggClicks[year] || 0) + 1;
@@ -72,6 +102,15 @@ export default function App() {
     }
   };
 
+  // Dedicated Route Views
+  if (currentPath === '/gallery') {
+    return <GalleryPage onBackToHome={navigateToHome} />;
+  }
+
+  if (currentPath === '/memories') {
+    return <MemoriesPage onBackToHome={navigateToHome} />;
+  }
+
   return (
     <div className="relative min-h-screen bg-[#050B18] text-[#FDFCF0] font-sans overflow-x-hidden selection:bg-[#D4AF37] selection:text-[#050B18]">
       {/* 1. Cinematic Opening Screen */}
@@ -81,15 +120,15 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* Top Accent Gradient Bar (Signature Elegant Dark Feature) */}
+      {/* Top Accent Gradient Bar */}
       <div className="fixed top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent opacity-40 z-50 pointer-events-none" />
 
-      {/* 2. Floating 3D WebGL Background Scene (Lightweight & Performance-Optimized) */}
+      {/* 2. Floating 3D WebGL Background Scene */}
       <div className="fixed inset-0 pointer-events-none z-0 opacity-40 overflow-hidden">
         <ThreeMemoryScene />
       </div>
 
-      {/* 3. Subtle Dot Matrix Texture & Atmospheric Radial Glows */}
+      {/* 3. Dot Matrix Texture */}
       <div
         className="fixed inset-0 pointer-events-none z-0 opacity-10"
         style={{
@@ -100,7 +139,7 @@ export default function App() {
       <div className="fixed top-0 left-1/4 w-[500px] h-[500px] bg-[#122244]/15 rounded-full blur-[140px] pointer-events-none z-0" />
       <div className="fixed bottom-0 right-1/4 w-[600px] h-[600px] bg-[#D4AF37]/5 rounded-full blur-[160px] pointer-events-none z-0" />
 
-      {/* Side Vertical Year Rail for Large Screens (Elegant Dark Archetype) */}
+      {/* Side Vertical Year Rail */}
       <aside className="fixed right-6 lg:right-8 top-1/2 -translate-y-1/2 hidden xl:flex flex-col gap-6 items-center z-30 pointer-events-auto">
         <div className="h-24 w-[1px] bg-gradient-to-b from-transparent via-[#D4AF37]/40 to-transparent" />
         <div className="flex flex-col gap-5 text-[10px] font-bold tracking-[0.4em] text-[#FDFCF0]/40 [writing-mode:vertical-lr] rotate-180">
@@ -151,7 +190,7 @@ export default function App() {
 
         {/* Separator Line */}
         <div className="max-w-5xl mx-auto px-6">
-          <div className="h-px bg-gradient-to-r from-transparent via-[#D4AF37]/30 to-transparent" />
+          <div className="h-px bg-[#D4AF37]/30" />
         </div>
 
         {/* Where It All Began: College Homage */}
@@ -159,7 +198,7 @@ export default function App() {
 
         {/* Separator Line */}
         <div className="max-w-5xl mx-auto px-6">
-          <div className="h-px bg-gradient-to-r from-transparent via-[#D4AF37]/30 to-transparent" />
+          <div className="h-px bg-[#D4AF37]/30" />
         </div>
 
         {/* Four Years Timeline */}
@@ -167,47 +206,23 @@ export default function App() {
 
         {/* Separator Line */}
         <div className="max-w-5xl mx-auto px-6">
-          <div className="h-px bg-gradient-to-r from-transparent via-[#D4AF37]/30 to-transparent" />
+          <div className="h-px bg-[#D4AF37]/30" />
         </div>
 
-        {/* Photo Memory Gallery */}
-        <MemoryGallery />
+        {/* Photo Memory Gallery Preview */}
+        <MemoryGallery onNavigateToGallery={navigateToGallery} />
 
         {/* Separator Line */}
         <div className="max-w-5xl mx-auto px-6">
-          <div className="h-px bg-gradient-to-r from-transparent via-[#D4AF37]/30 to-transparent" />
+          <div className="h-px bg-[#D4AF37]/30" />
         </div>
 
-        {/* Video Memories Reel */}
-        <VideoMemories />
+        {/* Memory Wall Sticky Board with Navigation Prop */}
+        <MemoryWall onNavigateToMemories={navigateToMemories} />
 
         {/* Separator Line */}
         <div className="max-w-5xl mx-auto px-6">
-          <div className="h-px bg-gradient-to-r from-transparent via-[#D4AF37]/30 to-transparent" />
-        </div>
-
-        {/* Memory Wall Sticky Board */}
-        <MemoryWall />
-
-        {/* Separator Line */}
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="h-px bg-gradient-to-r from-transparent via-[#D4AF37]/30 to-transparent" />
-        </div>
-
-        {/* CSE-A Batchmates Roster */}
-        <PeopleSection />
-
-        {/* Separator Line */}
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="h-px bg-gradient-to-r from-transparent via-[#D4AF37]/30 to-transparent" />
-        </div>
-
-        {/* Interactive AI Memory Generator */}
-        <CreateMemory />
-
-        {/* Separator Line */}
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="h-px bg-gradient-to-r from-transparent via-[#D4AF37]/30 to-transparent" />
+          <div className="h-px bg-[#D4AF37]/30" />
         </div>
 
         {/* Graduation Cap Toss Celebration */}
@@ -215,11 +230,8 @@ export default function App() {
 
         {/* Separator Line */}
         <div className="max-w-5xl mx-auto px-6">
-          <div className="h-px bg-gradient-to-r from-transparent via-[#D4AF37]/30 to-transparent" />
+          <div className="h-px bg-[#D4AF37]/30" />
         </div>
-
-        {/* QR Companion & Offline Time Capsule Section */}
-        <QRMemorySection />
 
         {/* Emotional Farewell Footer */}
         <FarewellSection onScrollToTop={handleScrollToTop} />

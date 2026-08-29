@@ -1,64 +1,59 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Images, Heart, X, ChevronLeft, ChevronRight, MapPin, Calendar, User, Sparkles, Filter } from 'lucide-react';
-import { MemoryItem } from '../types';
-import { photoMemories, galleryCategories } from '../data/memories';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
+import { Images, ArrowRight } from 'lucide-react';
+import { photoMemories } from '../data/memories';
 
-export const MemoryGallery: React.FC = () => {
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [activePhoto, setActivePhoto] = useState<MemoryItem | null>(null);
-  const [likesMap, setLikesMap] = useState<Record<string, number>>(() => {
-    const map: Record<string, number> = {};
-    photoMemories.forEach((p) => {
-      map[p.id] = p.likes;
-    });
-    return map;
-  });
-  const [likedByUser, setLikedByUser] = useState<Record<string, boolean>>({});
+interface MemoryGalleryProps {
+  onNavigateToGallery?: (photoId?: string) => void;
+}
 
-  const filteredPhotos = selectedCategory === 'All'
-    ? photoMemories
-    : photoMemories.filter((p) => p.category === selectedCategory);
+export const MemoryGallery: React.FC<MemoryGalleryProps> = ({ onNavigateToGallery }) => {
+  const [isMobile, setIsMobile] = useState<boolean>(() =>
+    typeof window !== 'undefined' ? window.innerWidth < 640 : false
+  );
 
-  const handleLike = (id: string, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    setLikedByUser((prev) => {
-      const isCurrentlyLiked = !!prev[id];
-      const newStatus = !isCurrentlyLiked;
-      setLikesMap((prevLikes) => ({
-        ...prevLikes,
-        [id]: (prevLikes[id] || 0) + (newStatus ? 1 : -1)
-      }));
-      return { ...prev, [id]: newStatus };
-    });
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Top 3 photo memories for the homepage stack
+  const stackPhotos = photoMemories.slice(0, 3);
+
+  const handleCardClick = (photoId: string) => {
+    if (onNavigateToGallery) {
+      onNavigateToGallery(photoId);
+    } else {
+      window.history.pushState({}, '', '/gallery');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    }
   };
 
-  const handleNext = () => {
-    if (!activePhoto) return;
-    const currentIndex = filteredPhotos.findIndex((p) => p.id === activePhoto.id);
-    const nextIndex = (currentIndex + 1) % filteredPhotos.length;
-    setActivePhoto(filteredPhotos[nextIndex]);
-  };
-
-  const handlePrev = () => {
-    if (!activePhoto) return;
-    const currentIndex = filteredPhotos.findIndex((p) => p.id === activePhoto.id);
-    const prevIndex = (currentIndex - 1 + filteredPhotos.length) % filteredPhotos.length;
-    setActivePhoto(filteredPhotos[prevIndex]);
-  };
+  // Reference visual composition: Card 1 (-15°), Card 2 (+4°), Card 3 (-8°)
+  const stackPositions = [
+    { rotation: -15, xMobile: -65, xDesktop: -130, y: 10, zIndex: 10 },
+    { rotation: 4, xMobile: -10, xDesktop: -20, y: -15, zIndex: 20 },
+    { rotation: -8, xMobile: 55, xDesktop: 110, y: 5, zIndex: 30 },
+  ];
 
   return (
     <section
       id="memories"
-      className="relative py-20 px-4 sm:px-6 md:px-8 max-w-7xl mx-auto overflow-hidden"
+      className="relative py-16 sm:py-24 px-4 sm:px-6 md:px-8 max-w-7xl mx-auto overflow-hidden flex flex-col items-center"
     >
-      {/* Section Header */}
-      <div className="text-center max-w-3xl mx-auto mb-12">
+      {/* Background radial glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] sm:w-[550px] h-[320px] sm:h-[550px] bg-[#D4AF37]/10 rounded-full blur-[130px] pointer-events-none z-0" />
+
+      {/* Header Section */}
+      <div className="relative z-10 text-center max-w-3xl mx-auto mb-8 sm:mb-12">
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.5 }}
           className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#0A1630] border border-[#D4AF37]/40 text-[#D4AF37] text-xs font-semibold tracking-[0.3em] uppercase mb-3 shadow-lg"
         >
           <Images className="w-3.5 h-3.5 text-[#D4AF37]" />
@@ -69,8 +64,8 @@ export const MemoryGallery: React.FC = () => {
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-[#FDFCF0] mb-3"
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="font-display text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-[#FDFCF0] mb-3"
         >
           MEMORIES WE'LL NEVER OUTGROW
         </motion.h2>
@@ -79,182 +74,95 @@ export const MemoryGallery: React.FC = () => {
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-sm sm:text-base text-[#CBD5E1] font-light max-w-xl mx-auto"
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="text-xs sm:text-base text-[#CBD5E1] font-light max-w-xl mx-auto"
         >
           Unfiltered smiles, sleepless lab nights, and four years of pure camaraderie frozen in time.
         </motion.p>
       </div>
 
-      {/* Category Filter Chips (Mobile-friendly horizontal scroll) */}
-      <div className="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto pb-4 mb-10 no-scrollbar">
-        {galleryCategories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setSelectedCategory(cat)}
-            className={`px-4 py-2 rounded-lg text-xs font-semibold tracking-[0.2em] uppercase transition-all duration-200 shrink-0 cursor-pointer ${selectedCategory === cat ? 'bg-[#D4AF37] text-[#050B18] font-bold shadow-lg shadow-[#D4AF37]/20' : 'bg-[#0A1630] text-[#CBD5E1] border border-[#D4AF37]/20 hover:border-[#D4AF37]/40'}`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
+      {/* Overlapping 3-Photo Fan Stack - Framer Motion X Offset Enabled */}
+      <div className="relative z-10 w-full max-w-4xl h-[260px] xs:h-[300px] sm:h-[400px] flex items-center justify-center mb-10 sm:mb-12 touch-pan-y overflow-visible">
+        {stackPhotos.map((photo, index) => {
+          const pos = stackPositions[index] || stackPositions[0];
+          const posX = isMobile ? pos.xMobile : pos.xDesktop;
 
-      {/* Masonry Grid Layout */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {filteredPhotos.map((photo, idx) => (
-          <motion.div
-            key={photo.id}
-            layout
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4, delay: idx * 0.05 }}
-            onClick={() => setActivePhoto(photo)}
-            className="group relative rounded-xl overflow-hidden bg-[#0A1630] border border-[#D4AF37]/25 hover:border-[#D4AF37]/60 shadow-xl cursor-pointer transition-all duration-300 hover:-translate-y-1"
-          >
-            {/* Image Container with Aspect Ratio */}
-            <div className={`w-full overflow-hidden ${idx % 3 === 0 ? 'aspect-[3/4]' : idx % 2 === 0 ? 'aspect-[4/3]' : 'aspect-square'}`}>
-              <img
-                src={photo.image}
-                alt={photo.title}
-                loading="lazy"
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 filter brightness-95 group-hover:brightness-100"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#050B18] via-[#050B18]/25 to-transparent opacity-80 group-hover:opacity-60 transition-opacity" />
-            </div>
-
-            {/* Badges on Top */}
-            <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
-              <span className="text-[10px] tracking-[0.2em] uppercase px-2.5 py-0.5 rounded-full bg-[#050B18]/90 text-[#D4AF37] border border-[#D4AF37]/40 font-semibold backdrop-blur-sm">
-                {photo.year} • {photo.category}
-              </span>
-
-              <button
-                onClick={(e) => handleLike(photo.id, e)}
-                className={`pointer-events-auto p-1.5 rounded-full backdrop-blur-md transition-colors ${likedByUser[photo.id] ? 'bg-red-500/20 text-red-400 border border-red-500/40' : 'bg-black/50 text-white/80 hover:text-red-400 border border-white/10'}`}
-                title="Like memory"
-              >
-                <Heart className={`w-3.5 h-3.5 ${likedByUser[photo.id] ? 'fill-current' : ''}`} />
-              </button>
-            </div>
-
-            {/* Bottom Details */}
-            <div className="absolute bottom-3 left-3 right-3 pointer-events-none">
-              <h3 className="text-sm font-serif-title font-semibold text-[#FDFCF0] group-hover:text-[#D4AF37] transition-colors leading-snug line-clamp-1">
-                {photo.title}
-              </h3>
-              <p className="text-[11px] text-[#CBD5E1]/80 font-light line-clamp-2 mt-0.5">
-                {photo.caption}
-              </p>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Fullscreen Lightbox Modal */}
-      <AnimatePresence>
-        {activePhoto && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-xl p-4 sm:p-6"
-            onClick={() => setActivePhoto(null)}
-          >
+          return (
             <motion.div
-              initial={{ scale: 0.92, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.92, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative max-w-4xl w-full max-h-[90vh] bg-[#0A1630] border border-[#D4AF37]/40 rounded-2xl overflow-hidden shadow-2xl flex flex-col md:flex-row"
+              key={photo.id}
+              initial={{ opacity: 0, scale: 0.85, x: posX, y: 25 }}
+              whileInView={{
+                opacity: 1,
+                scale: 1,
+                rotate: pos.rotation,
+                x: posX,
+                y: pos.y,
+                zIndex: pos.zIndex,
+              }}
+              viewport={{ once: true }}
+              transition={{
+                type: 'spring',
+                stiffness: 180,
+                damping: 18,
+                delay: index * 0.1,
+              }}
+              whileHover={{
+                scale: 1.07,
+                x: posX,
+                y: pos.y - 18,
+                rotate: pos.rotation * 0.4,
+                zIndex: 60,
+                transition: { type: 'spring', stiffness: 350, damping: 22 },
+              }}
+              whileTap={{ scale: 0.95, x: posX, zIndex: 60 }}
+              onClick={() => handleCardClick(photo.id)}
+              className="absolute cursor-pointer overflow-hidden rounded-[2rem] sm:rounded-[2.75rem] border-[6px] sm:border-[8px] border-[#0A1630] ring-1 ring-[#D4AF37]/45 shadow-[0_25px_60px_rgba(0,0,0,0.7)] bg-[#0A1630] group select-none transition-shadow duration-300 hover:shadow-[0_30px_70px_rgba(212,175,55,0.3)] active:border-[#D4AF37]"
+              style={{
+                width: 'clamp(155px, 44vw, 270px)',
+                height: 'clamp(155px, 44vw, 270px)',
+              }}
             >
-              {/* Close Button */}
-              <button
-                onClick={() => setActivePhoto(null)}
-                className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/60 text-[#FDFCF0] hover:text-[#D4AF37] transition-colors border border-white/20"
-                aria-label="Close memory viewer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              {/* Photo View */}
-              <div className="relative md:w-3/5 bg-black flex items-center justify-center overflow-hidden min-h-[300px]">
+              {/* Photo Image & Title Overlay */}
+              <div className="w-full h-full relative overflow-hidden bg-black/50">
                 <img
-                  src={activePhoto.image}
-                  alt={activePhoto.title}
-                  className="w-full h-full object-contain max-h-[60vh] md:max-h-[85vh]"
+                  src={photo.image}
+                  alt={photo.title}
+                  loading="lazy"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 filter brightness-95 group-hover:brightness-105 pointer-events-none"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#050B18]/85 via-transparent to-transparent opacity-75 group-hover:opacity-40 transition-opacity" />
 
-                {/* Left/Right Carousel Nav */}
-                <button
-                  onClick={handlePrev}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/80 text-white border border-white/20 transition-all"
-                  aria-label="Previous photo"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={handleNext}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/80 text-white border border-white/20 transition-all"
-                  aria-label="Next photo"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Memory Story Description */}
-              <div className="md:w-2/5 p-6 flex flex-col justify-between overflow-y-auto max-h-[40vh] md:max-h-full">
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-xs uppercase tracking-[0.25em] px-2.5 py-0.5 rounded-full bg-[#D4AF37]/20 text-[#D4AF37] border border-[#D4AF37]/30 font-semibold">
-                      {activePhoto.category}
-                    </span>
-                    <span className="text-xs text-[#94A3B8]">
-                      Year {activePhoto.year}
-                    </span>
-                  </div>
-
-                  <h3 className="font-serif-title text-2xl font-bold text-[#FDFCF0] mb-2">
-                    {activePhoto.title}
-                  </h3>
-
-                  <p className="text-xs sm:text-sm text-[#CBD5E1] font-light leading-relaxed mb-4">
-                    {activePhoto.caption}
-                  </p>
-
-                  <div className="space-y-2 pt-3 border-t border-white/10 text-xs text-[#94A3B8]">
-                    {activePhoto.location && (
-                      <div className="flex items-center gap-2">
-                        <MapPin className="w-3.5 h-3.5 text-[#D4AF37]" />
-                        <span>{activePhoto.location}</span>
-                      </div>
-                    )}
-                    {activePhoto.author && (
-                      <div className="flex items-center gap-2">
-                        <User className="w-3.5 h-3.5 text-[#D4AF37]" />
-                        <span>Contributed by: {activePhoto.author}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between">
-                  <button
-                    onClick={() => handleLike(activePhoto.id)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold tracking-wider uppercase transition-colors ${likedByUser[activePhoto.id] ? 'bg-red-500/20 text-red-400 border border-red-500/40' : 'bg-white/5 hover:bg-white/10 text-[#FDFCF0] border border-white/10'}`}
-                  >
-                    <Heart className={`w-4 h-4 ${likedByUser[activePhoto.id] ? 'fill-current text-red-400' : ''}`} />
-                    <span>{likesMap[activePhoto.id] || 0} Hearts</span>
-                  </button>
-
-                  <div className="text-[11px] text-[#94A3B8] italic tracking-wide">
-                    KRCE CSE-A Time Capsule
-                  </div>
+                {/* Photo Badge Overlay */}
+                <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between opacity-95 group-hover:opacity-100 transition-opacity">
+                  <span className="text-[8px] sm:text-[10px] font-bold tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-[#050B18]/90 text-[#D4AF37] border border-[#D4AF37]/50 backdrop-blur-md truncate max-w-[90%]">
+                    {photo.year} • {photo.title}
+                  </span>
                 </div>
               </div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          );
+        })}
+      </div>
+
+      {/* Narrative & Navigation Call To Action */}
+      <div className="relative z-10 text-center max-w-xl mx-auto space-y-5">
+        <p className="text-sm sm:text-lg font-serif-title font-normal tracking-tight text-[#FDFCF0]/90 leading-relaxed">
+          People don’t just recall memories. <br className="hidden sm:block" />
+          They fall in love with how four years felt.
+        </p>
+
+        <div className="flex justify-center pt-2">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => handleCardClick('')}
+            className="group flex items-center gap-2.5 px-7 sm:px-9 py-3.5 sm:py-4 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#D4AF37] text-[#050B18] font-bold text-xs sm:text-sm tracking-wider uppercase shadow-xl shadow-[#D4AF37]/25 hover:shadow-[#D4AF37]/45 transition-all cursor-pointer border border-[#D4AF37]/40"
+          >
+            <span>Explore Full Gallery</span>
+            <ArrowRight className="w-4 h-4 text-[#050B18] group-hover:translate-x-1 transition-transform" />
+          </motion.button>
+        </div>
+      </div>
     </section>
   );
 };
