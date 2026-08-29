@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-display: 'Cinzel', serif;
+    --font-serif: 'Cormorant Garamond', 'Playfair Display', serif;
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-script: 'Alex Brush', 'Caveat', cursive;
+  }
+}
+
+.font-display {
+  font-family: 'Cinzel', serif;
+}
+
+.font-serif-title {
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.font-editorial {
+  font-family: 'Playfair Display', serif;
+}
+
+.font-script {
+  font-family: 'Alex Brush', 'Caveat', cursive;
+}
+
+.font-handwriting {
+  font-family: 'Caveat', cursive;
+}
+
+/* Gold Gradient & Shimmer */
+.gold-gradient-text {
+  background: linear-gradient(135deg, #FFF6E0 0%, #D4AF37 45%, #F7E7B4 70%, #AA802A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gold-gradient-border {
+  border-image: linear-gradient(to right, rgba(212, 175, 55, 0.1), rgba(212, 175, 55, 0.6), rgba(212, 175, 55, 0.1)) 1;
+}
+
+.gold-glow {
+  box-shadow: 0 0 30px -5px rgba(212, 175, 55, 0.3);
+}
+
+.navy-card-glow {
+  box-shadow: 0 10px 30px -10px rgba(2, 6, 23, 0.8), 0 0 1px 1px rgba(212, 175, 55, 0.2);
+}
+
+/* Subtle Elegant Dark Matrix Dot Pattern */
+.bg-grain {
+  background-image: radial-gradient(#FDFCF0 0.5px, transparent 0.5px);
+  background-size: 32px 32px;
+}
+
+/* Pencil Sketch stroke animation for KRCE building */
+@keyframes strokeAnim {
+  0% {
+    stroke-dashoffset: 1000;
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+.animate-draw-stroke {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: strokeAnim 3.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* Smooth custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050B18;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #142445;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #D4AF37;
+}
