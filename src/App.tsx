@@ -31,6 +31,24 @@ export default function App() {
         title: 'Where It All Began',
         message: "That's where everything started. A batch of strangers walking into KRCE with shy smiles and big dreams."
       });
+    } else if (year === '2022') {
+      setActiveEgg({
+        year: '2022',
+        title: 'Code & Connections',
+        message: "Second year brought deep friendships, endless lab submissions, and our first real tech projects together."
+      });
+    } else if (year === '2023') {
+      setActiveEgg({
+        year: '2023',
+        title: 'Hackathons & High Hopes',
+        message: "Third year pushed our limits: late night hackathons, symposium victories, and memories we'll cherish forever."
+      });
+    } else if (year === '2024') {
+      setActiveEgg({
+        year: '2024',
+        title: 'Capstone & Placements',
+        message: "Final year projects, campus interviews, and realizing how fast our four years together were passing."
+      });
     } else if (year === '2025') {
       setActiveEgg({
         year: '2025',

@@ -103,8 +103,9 @@ export const FarewellSection: React.FC<FarewellSectionProps> = ({ onScrollToTop 
             “Until we meet again.”
           </p>
 
-          <div className="text-[10px] tracking-widest text-[#64748B] uppercase mt-4">
-            K. Ramakrishnan College of Engineering • Samayapuram, Trichy • Batch 2021–2025
+          <div className="text-[10px] tracking-widest text-[#94A3B8] uppercase mt-4 space-y-1">
+            <div>{siteConfig.collegeName} • {siteConfig.department}</div>
+            <div>Samayapuram, Tiruchirappalli, Tamil Nadu • Affiliated to Anna University, Chennai</div>
           </div>
         </motion.div>
       </div>

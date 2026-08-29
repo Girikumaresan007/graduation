@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, ArrowRight, Volume2 } from 'lucide-react';
-import { soundtrack } from '../utils/audioSynth';
+import { Sparkles, ArrowRight, GraduationCap } from 'lucide-react';
+import { siteConfig } from '../data/site';
 
 interface IntroExperienceProps {
   onComplete: () => void;
@@ -18,7 +18,7 @@ export const IntroExperience: React.FC<IntroExperienceProps> = ({ onComplete }) 
     const t2 = setTimeout(() => setStep(2), 2200);
     // Step 2: "One unforgettable chapter."
     const t3 = setTimeout(() => setStep(3), 3400);
-    // Step 3: Morph to KRCE CSE-A & Year count
+    // Step 3: Morph to KRCE CSE A & Year count
     const t4 = setTimeout(() => {
       setStep(4);
       // Morph year 2021 -> 2022 -> 2023 -> 2024 -> 2025
@@ -29,7 +29,7 @@ export const IntroExperience: React.FC<IntroExperienceProps> = ({ onComplete }) 
         }, idx * 280);
       });
     }, 4600);
-    // Step 5: "Welcome to our memories" + Tap to Begin
+    // Step 5: "Welcome to our memories" + Enter Button
     const t5 = setTimeout(() => setStep(5), 6200);
 
     return () => {
@@ -40,13 +40,6 @@ export const IntroExperience: React.FC<IntroExperienceProps> = ({ onComplete }) 
       clearTimeout(t5);
     };
   }, []);
-
-  const handleStart = (withAudio = true) => {
-    if (withAudio) {
-      soundtrack.play();
-    }
-    onComplete();
-  };
 
   return (
     <div
@@ -61,15 +54,6 @@ export const IntroExperience: React.FC<IntroExperienceProps> = ({ onComplete }) 
         <div className="absolute top-2/3 right-1/5 w-1 h-1 bg-[#D4AF37] rounded-full animate-ping" />
         <div className="absolute inset-0 bg-gradient-to-b from-[#050B18] via-[#08152E] to-[#050B18] opacity-80" />
       </div>
-
-      {/* Skip button for rapid access */}
-      <button
-        id="intro-skip-btn"
-        onClick={() => handleStart(false)}
-        className="absolute top-6 right-6 text-xs tracking-[0.25em] uppercase text-[#94A3B8] hover:text-[#D4AF37] transition-colors py-2 px-3 rounded-full border border-white/10 hover:border-[#D4AF37]/40 backdrop-blur-sm z-20"
-      >
-        Skip Intro
-      </button>
 
       {/* Main Narrative Container */}
       <div className="relative z-10 max-w-lg w-full text-center flex flex-col items-center justify-center min-h-[380px]">
@@ -114,43 +98,48 @@ export const IntroExperience: React.FC<IntroExperienceProps> = ({ onComplete }) 
           </div>
         )}
 
-        {/* Step 4 & 5: College Identity & Year Morph */}
+        {/* Step 4 & 5: College Identity & Centered Batch Display */}
         {step >= 4 && (
           <motion.div
             initial={{ opacity: 0, scale: 0.94 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.9, ease: 'easeOut' }}
-            className="flex flex-col items-center"
+            className="flex flex-col items-center text-center w-full"
           >
             <div className="flex items-center gap-2 mb-3">
               <span className="h-px w-8 bg-gradient-to-r from-transparent to-[#D4AF37]" />
-              <span className="text-xs font-semibold tracking-[0.3em] uppercase text-[#D4AF37]">
-                Graduation Memory Portal
+              <span className="text-[11px] font-bold tracking-[0.3em] uppercase text-[#D4AF37]">
+                GRADUATION MEMORY PORTAL
               </span>
               <span className="h-px w-8 bg-gradient-to-l from-transparent to-[#D4AF37]" />
             </div>
 
-            <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold tracking-wider text-[#FDFCF0] mb-2">
-              KRCE
-            </h1>
+            {/* Centered Batch Structure */}
+            <div className="flex flex-col items-center justify-center my-3 text-center">
+              <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold tracking-wider text-[#FDFCF0]">
+                KRCE CSE A
+              </h1>
 
-            <div className="inline-block px-4 py-1 rounded-full bg-[#0A1630] border border-[#D4AF37]/40 text-[#FDFCF0] text-sm md:text-base font-medium tracking-widest mb-4">
-              CSE-A BATCH
-            </div>
+              <div className="my-2">
+                <span className="inline-block px-4 py-1 rounded-full bg-[#0A1630] border border-[#D4AF37]/40 text-[#D4AF37] text-xs font-bold tracking-[0.3em] uppercase shadow-md">
+                  BATCH
+                </span>
+              </div>
 
-            {/* Year Morph Display */}
-            <div className="font-serif-title text-3xl md:text-4xl text-[#D4AF37] flex items-center justify-center gap-2 font-semibold">
-              <span className="tracking-widest">2021</span>
-              <span className="text-[#94A3B8] text-xl">—</span>
-              <motion.span
-                key={yearDisplay}
-                initial={{ opacity: 0.4, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2 }}
-                className="text-[#FDFCF0] underline decoration-[#D4AF37] decoration-2 underline-offset-4"
-              >
-                {yearDisplay}
-              </motion.span>
+              {/* Year Morph Display */}
+              <div className="font-serif-title text-3xl md:text-4xl text-[#D4AF37] flex items-center justify-center gap-2 font-semibold mt-1">
+                <span className="tracking-widest">2021</span>
+                <span className="text-[#94A3B8] text-xl">—</span>
+                <motion.span
+                  key={yearDisplay}
+                  initial={{ opacity: 0.4, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="text-[#FDFCF0] underline decoration-[#D4AF37] decoration-2 underline-offset-4"
+                >
+                  {yearDisplay}
+                </motion.span>
+              </div>
             </div>
 
             {/* Step 5: Welcome & Interaction CTA */}
@@ -159,35 +148,26 @@ export const IntroExperience: React.FC<IntroExperienceProps> = ({ onComplete }) 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="mt-10 flex flex-col items-center gap-4 w-full"
+                className="mt-6 flex flex-col items-center gap-4 w-full"
               >
-                <p className="font-editorial italic text-xl md:text-2xl text-[#FDFCF0]">
-                  Welcome to our memories.
+                <p className="font-editorial italic text-lg sm:text-xl text-[#CBD5E1] max-w-md mx-auto leading-relaxed">
+                  “Step into four years of unforgettable moments, lifelong friendships, and our shared journey at KRCE.”
                 </p>
 
-                <div className="flex flex-col sm:flex-row items-center gap-3 mt-4 w-full max-w-xs justify-center">
+                <div className="flex items-center justify-center mt-2 w-full max-w-xs">
                   <button
-                    id="intro-begin-btn"
-                    onClick={() => handleStart(true)}
-                    className="w-full py-3.5 px-6 rounded-lg bg-[#D4AF37] hover:bg-[#FDFCF0] text-[#050B18] font-bold text-xs uppercase tracking-[0.25em] flex items-center justify-center gap-2 shadow-lg shadow-[#D4AF37]/20 transition-all duration-200 cursor-pointer"
+                    id="intro-enter-btn"
+                    onClick={onComplete}
+                    className="w-full py-4 px-8 rounded-lg bg-[#D4AF37] hover:bg-[#FDFCF0] text-[#050B18] font-bold text-xs uppercase tracking-[0.25em] flex items-center justify-center gap-2.5 shadow-xl shadow-[#D4AF37]/25 transition-all duration-200 cursor-pointer active:scale-95"
                   >
-                    <Volume2 className="w-4 h-4" />
-                    <span>Enter With Music</span>
+                    <span>ENTER MEMORY PORTAL</span>
                     <ArrowRight className="w-4 h-4" />
-                  </button>
-
-                  <button
-                    id="intro-silent-btn"
-                    onClick={() => handleStart(false)}
-                    className="w-full py-3 px-4 rounded-lg bg-[#0A1630] hover:bg-[#122244] text-xs text-[#CBD5E1] font-semibold tracking-[0.2em] uppercase border border-[#D4AF37]/30 active:scale-95 transition-all cursor-pointer"
-                  >
-                    Enter Silently
                   </button>
                 </div>
 
-                <div className="flex items-center gap-1 text-[11px] text-[#94A3B8] mt-2">
-                  <Sparkles className="w-3 h-3 text-[#D4AF37]" />
-                  <span>Turn on sound for the full graduation experience</span>
+                <div className="flex items-center gap-1.5 text-[11px] text-[#94A3B8] mt-1">
+                  <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  <span>Class of Computer Science & Engineering Section A</span>
                 </div>
               </motion.div>
             )}
@@ -195,10 +175,18 @@ export const IntroExperience: React.FC<IntroExperienceProps> = ({ onComplete }) 
         )}
       </div>
 
-      {/* Bottom Subtle Badge */}
-      <div className="absolute bottom-6 text-[10px] tracking-[0.3em] uppercase text-[#94A3B8] text-center">
-        K. Ramakrishnan College of Engineering • Samayapuram
+      {/* Bottom Subtle Badge with College, Location & Anna University Details */}
+      <div className="absolute bottom-6 flex flex-col items-center gap-1 text-center px-4">
+        <div className="text-[11px] tracking-[0.25em] uppercase font-semibold text-[#CBD5E1]">
+          {siteConfig.collegeName}
+        </div>
+        <div className="text-[10px] tracking-[0.2em] uppercase text-[#94A3B8] flex items-center gap-2 flex-wrap justify-center">
+          <span>Samayapuram, Tiruchirappalli</span>
+          <span>•</span>
+          <span className="text-[#D4AF37]">Affiliated to Anna University, Chennai</span>
+        </div>
       </div>
     </div>
   );
 };
+

@@ -41,16 +41,23 @@ export const CollegeStory: React.FC = () => {
         >
           {siteConfig.collegeName}
         </motion.p>
+        <p className="text-xs sm:text-sm font-medium text-[#FDFCF0]/90 mt-1">
+          {siteConfig.department}
+        </p>
 
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="flex items-center justify-center gap-1.5 text-xs text-[#94A3B8] mt-2 tracking-wider"
+          className="flex flex-wrap items-center justify-center gap-2 text-xs text-[#CBD5E1] mt-2 tracking-wider"
         >
-          <MapPin className="w-3.5 h-3.5 text-[#D4AF37]" />
-          <span>Samayapuram, Tiruchirappalli — Anna University Affiliation</span>
+          <span className="flex items-center gap-1">
+            <MapPin className="w-3.5 h-3.5 text-[#D4AF37]" />
+            <span>Samayapuram, Tiruchirappalli, Tamil Nadu</span>
+          </span>
+          <span className="text-[#D4AF37]">•</span>
+          <span className="text-[#D4AF37] font-semibold">Affiliated to Anna University, Chennai</span>
         </motion.div>
       </div>
 

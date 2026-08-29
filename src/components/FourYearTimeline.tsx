@@ -49,66 +49,63 @@ export const FourYearTimeline: React.FC<FourYearTimelineProps> = ({ onYearSelect
         </motion.p>
       </div>
 
-      {/* Timeline Quick Selector Pill Bar for Mobile & Desktop */}
-      <div className="flex items-center justify-center gap-2 mb-12 overflow-x-auto pb-2 px-2 no-scrollbar">
-        {timelineYears.map((item) => (
-          <button
-            key={`pill-${item.year}`}
-            onClick={() => {
-              setActiveYear(item.year);
-              if (onYearSelect) onYearSelect(item.year);
-              const el = document.getElementById(`year-card-${item.year}`);
-              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }}
-            className={`px-4 py-2 rounded-lg text-xs font-semibold tracking-[0.2em] uppercase transition-all duration-300 shrink-0 cursor-pointer ${activeYear === item.year ? 'bg-[#D4AF37] text-[#050B18] shadow-lg shadow-[#D4AF37]/25 scale-105 font-bold' : 'bg-[#0A1630] text-[#CBD5E1] border border-[#D4AF37]/20 hover:border-[#D4AF37]/50'}`}
-          >
-            {item.year} • {item.title}
-          </button>
-        ))}
-      </div>
-
-      {/* Vertical Timeline Track */}
+      {/* Vertical Timeline Track with Animated Glow */}
       <div className="relative border-l-2 border-[#D4AF37]/30 ml-4 sm:ml-32 space-y-12 sm:space-y-16">
         {timelineYears.map((item, index) => (
           <motion.div
             key={item.year}
             id={`year-card-${item.year}`}
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.7, delay: index * 0.1 }}
-            onViewportEnter={() => setActiveYear(item.year)}
-            className="relative pl-6 sm:pl-10"
+            initial={{ opacity: 0, y: 35, x: 10 }}
+            whileInView={{ opacity: 1, y: 0, x: 0 }}
+            viewport={{ once: false, margin: '-50px' }}
+            transition={{ duration: 0.7, delay: index * 0.12, ease: 'easeOut' }}
+            className="relative pl-6 sm:pl-10 group"
           >
-            {/* Year Node Badge on Timeline Line */}
-            <div className="absolute -left-[17px] top-1.5 w-8 h-8 rounded-full bg-[#050B18] border-2 border-[#D4AF37] flex items-center justify-center shadow-lg shadow-[#D4AF37]/30 z-10">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#D4AF37]" />
+            {/* Pulsing Year Node Badge on Timeline Line */}
+            <div
+              onClick={() => onYearSelect && onYearSelect(item.year)}
+              className="absolute -left-[17px] top-1.5 w-8 h-8 rounded-full bg-[#050B18] border-2 border-[#D4AF37] flex items-center justify-center shadow-lg shadow-[#D4AF37]/40 z-10 group-hover:scale-115 group-hover:border-[#FFF7D6] transition-all duration-300 cursor-pointer"
+              title={`Click to reveal ${item.year} memories`}
+            >
+              <span className="w-2.5 h-2.5 rounded-full bg-[#D4AF37] group-hover:bg-[#FFF7D6] animate-pulse" />
+              <span className="absolute inset-0 rounded-full bg-[#D4AF37]/20 animate-ping opacity-75" />
             </div>
 
             {/* Desktop Left-side Year Heading */}
             <div className="sm:absolute sm:-left-32 sm:top-1 sm:w-24 sm:text-right hidden sm:block">
-              <span className="font-display text-2xl font-bold text-[#D4AF37] block">
+              <button
+                onClick={() => onYearSelect && onYearSelect(item.year)}
+                className="font-display text-2xl font-bold text-[#D4AF37] group-hover:text-[#FFF7D6] hover:scale-110 transition-all block drop-shadow-md text-right w-full cursor-pointer focus:outline-none"
+                title={`Click to view ${item.year} memory secret`}
+              >
                 {item.year}
-              </span>
-              <span className="text-[10px] tracking-[0.25em] text-[#94A3B8] uppercase block">
+              </button>
+              <span className="text-[10px] tracking-[0.25em] text-[#94A3B8] uppercase block font-semibold">
                 {item.badge}
               </span>
             </div>
 
-            {/* Main Milestone Card */}
-            <div className="bg-gradient-to-br from-[#0A1630] to-[#071026] border border-[#D4AF37]/25 hover:border-[#D4AF37]/50 rounded-xl p-6 sm:p-8 backdrop-blur-md shadow-2xl transition-all duration-300">
+            {/* Main Milestone Card with Animated Glow & Hover Effect */}
+            <motion.div
+              whileHover={{ y: -4, scale: 1.01 }}
+              transition={{ duration: 0.25 }}
+              className="bg-gradient-to-br from-[#0A1630] via-[#071026] to-[#0A1630] border border-[#D4AF37]/25 hover:border-[#D4AF37]/70 rounded-xl p-6 sm:p-8 backdrop-blur-md shadow-2xl transition-all duration-300 hover:shadow-[#D4AF37]/15"
+            >
               {/* Mobile Year Badge */}
               <div className="flex sm:hidden items-center justify-between gap-2 mb-3">
-                <span className="font-display text-xl font-bold text-[#D4AF37]">
+                <button
+                  onClick={() => onYearSelect && onYearSelect(item.year)}
+                  className="font-display text-xl font-bold text-[#D4AF37] hover:text-[#FFF7D6] cursor-pointer"
+                >
                   {item.year}
-                </span>
-                <span className="text-[10px] tracking-[0.25em] uppercase px-2.5 py-0.5 rounded-full bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/30 font-medium">
+                </button>
+                <span className="text-[10px] tracking-[0.25em] uppercase px-2.5 py-0.5 rounded-full bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/30 font-bold">
                   {item.badge}
                 </span>
               </div>
 
               {/* Title & Tagline */}
-              <h3 className="font-serif-title text-2xl sm:text-3xl font-semibold text-[#FDFCF0] mb-1">
+              <h3 className="font-serif-title text-2xl sm:text-3xl font-semibold text-[#FDFCF0] group-hover:text-[#D4AF37] transition-colors mb-1">
                 “{item.title}”
               </h3>
               <p className="text-xs sm:text-sm text-[#D4AF37] font-medium tracking-wide mb-4 italic">
@@ -120,30 +117,39 @@ export const FourYearTimeline: React.FC<FourYearTimelineProps> = ({ onYearSelect
                 {item.description}
               </p>
 
-              {/* Core Moments Checklist */}
+              {/* Core Moments Checklist with Animated Entry */}
               <div className="space-y-2 mb-6">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.25em] text-[#94A3B8]">
-                  Key Memories & Milestones
+                <div className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#94A3B8] flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  <span>Key Memories & Milestones</span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {item.moments.map((moment, mIdx) => (
-                    <div
+                    <motion.div
                       key={mIdx}
-                      className="flex items-start gap-2 text-xs text-[#CBD5E1] bg-[#050B18]/80 p-2.5 rounded-lg border border-[#D4AF37]/15"
+                      initial={{ opacity: 0, x: -10 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.4, delay: mIdx * 0.08 }}
+                      whileHover={{ scale: 1.02, backgroundColor: 'rgba(10, 22, 48, 0.95)' }}
+                      className="flex items-start gap-2 text-xs text-[#CBD5E1] bg-[#050B18]/90 p-3 rounded-lg border border-[#D4AF37]/20 shadow-sm transition-all"
                     >
-                      <CheckCircle2 className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 mt-0.5" />
-                      <span className="leading-snug">{moment}</span>
-                    </div>
+                      <CheckCircle2 className="w-4 h-4 text-[#D4AF37] shrink-0 mt-0.5" />
+                      <span className="leading-snug font-medium">{moment}</span>
+                    </motion.div>
                   ))}
                 </div>
               </div>
 
               {/* Emotional Batch Quote */}
-              <div className="flex items-start gap-3 p-3.5 rounded-lg bg-[#D4AF37]/5 border border-[#D4AF37]/20 text-[#FDFCF0] text-xs italic font-editorial">
-                <Quote className="w-4 h-4 text-[#D4AF37] shrink-0 opacity-80" />
+              <motion.div
+                whileHover={{ scale: 1.01 }}
+                className="flex items-start gap-3 p-4 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#FDFCF0] text-xs sm:text-sm italic font-editorial shadow-md"
+              >
+                <Quote className="w-4 h-4 text-[#D4AF37] shrink-0 opacity-90 mt-0.5" />
                 <span>{item.quote}</span>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </motion.div>
         ))}
       </div>

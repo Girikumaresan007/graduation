@@ -5,7 +5,8 @@ export const siteConfig = {
   section: "CSE-A",
   batch: "2021 – 2025",
   yearsSpan: "2021 — 2025",
-  location: "Samayapuram, Tiruchirappalli, Tamil Nadu",
+  affiliation: "Affiliated to Anna University, Chennai | Approved by AICTE",
+  location: "Samayapuram, Tiruchirappalli, Tamil Nadu – 621112",
   tagline: "The End of a Chapter, The Start of Forever",
   subheading: "Four years. Countless memories. A lifetime of stories.",
   stats: [
@@ -25,3 +26,4 @@ export const siteConfig = {
     happyFarewell: "Happy Farewell, Batch of 2025!"
   }
 };
+
