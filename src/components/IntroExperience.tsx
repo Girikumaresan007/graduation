@@ -12,32 +12,34 @@ export const IntroExperience: React.FC<IntroExperienceProps> = ({ onComplete }) 
   const [yearDisplay, setYearDisplay] = useState<string>('2021');
 
   useEffect(() => {
+    const timeouts: ReturnType<typeof setTimeout>[] = [];
+
     // Step 0: "Four years."
-    const t1 = setTimeout(() => setStep(1), 1000);
+    timeouts.push(setTimeout(() => setStep(1), 1000));
     // Step 1: "Countless memories."
-    const t2 = setTimeout(() => setStep(2), 2200);
+    timeouts.push(setTimeout(() => setStep(2), 2200));
     // Step 2: "One unforgettable chapter."
-    const t3 = setTimeout(() => setStep(3), 3400);
-    // Step 3: Morph to KRCE CSE A & Year count
-    const t4 = setTimeout(() => {
-      setStep(4);
-      // Morph year 2021 -> 2022 -> 2023 -> 2024 -> 2025
-      const years = ['2021', '2022', '2023', '2024', '2025'];
-      years.forEach((yr, idx) => {
-        setTimeout(() => {
-          setYearDisplay(yr);
-        }, idx * 280);
-      });
-    }, 4600);
-    // Step 5: "Welcome to our memories" + Enter Button
-    const t5 = setTimeout(() => setStep(5), 6200);
+    timeouts.push(setTimeout(() => setStep(3), 3400));
+    // Step 3: Morph to KRCE CSE A & Year count (starts at 4600ms)
+    timeouts.push(
+      setTimeout(() => {
+        setStep(4);
+        // Morph year 2021 -> 2022 -> 2023 -> 2024 -> 2025 with 650ms per step
+        const years = ['2021', '2022', '2023', '2024', '2025'];
+        years.forEach((yr, idx) => {
+          timeouts.push(
+            setTimeout(() => {
+              setYearDisplay(yr);
+            }, idx * 650)
+          );
+        });
+      }, 4600)
+    );
+    // Step 5: "Welcome to our memories" + Enter Button revealed later (at 8800ms)
+    timeouts.push(setTimeout(() => setStep(5), 8800));
 
     return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-      clearTimeout(t4);
-      clearTimeout(t5);
+      timeouts.forEach((t) => clearTimeout(t));
     };
   }, []);
 
@@ -127,18 +129,27 @@ export const IntroExperience: React.FC<IntroExperienceProps> = ({ onComplete }) 
               </div>
 
               {/* Year Morph Display */}
-              <div className="font-serif-title text-3xl md:text-4xl text-[#D4AF37] flex items-center justify-center gap-2 font-semibold mt-1">
-                <span className="tracking-widest">2021</span>
+              <div className="font-serif-title text-3xl sm:text-4xl text-[#D4AF37] flex items-center justify-center gap-3 font-semibold mt-1 min-h-[48px]">
+                <span className="tracking-widest text-[#FDFCF0]">2021</span>
                 <span className="text-[#94A3B8] text-xl">—</span>
-                <motion.span
-                  key={yearDisplay}
-                  initial={{ opacity: 0.4, y: -8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="text-[#FDFCF0] underline decoration-[#D4AF37] decoration-2 underline-offset-4"
-                >
-                  {yearDisplay}
-                </motion.span>
+                <div className="relative inline-flex items-center justify-start min-w-[72px]">
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={yearDisplay}
+                      initial={{ opacity: 0, y: -10, scale: 0.92 }}
+                      animate={{ opacity: 1, y: 0, scale: yearDisplay === '2025' ? 1.08 : 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.92 }}
+                      transition={{ duration: 0.35, ease: 'easeOut' }}
+                      className={`inline-block underline decoration-[#D4AF37] decoration-2 underline-offset-4 ${
+                        yearDisplay === '2025'
+                          ? 'text-[#D4AF37] font-bold drop-shadow-[0_0_15px_rgba(212,175,55,0.7)]'
+                          : 'text-[#FDFCF0]'
+                      }`}
+                    >
+                      {yearDisplay}
+                    </motion.span>
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
 

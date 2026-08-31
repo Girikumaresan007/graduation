@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { GraduationCap } from 'lucide-react';
+import { GraduationCap, Sparkles } from 'lucide-react';
 
 interface NavigationProps {
   onEasterEggTrigger?: (year: string) => void;
@@ -107,29 +107,30 @@ export const Navigation: React.FC<NavigationProps> = () => {
   }, []);
 
   const navLinks = [
-    { label: 'Home', href: '#hero' },
-    { label: 'Our Story', href: '#story' },
-    { label: 'Timeline', href: '#timeline' },
-    { label: 'Memories', href: '#memories' },
-    { label: 'Videos', href: '#videos' },
-    { label: 'Farewell', href: '#farewell' }
+    { id: 'hero', label: 'Home', href: '#hero' },
+    { id: 'story', label: 'Our Story', href: '#story' },
+    { id: 'timeline', label: 'Timeline', href: '#timeline' },
+    { id: 'memories', label: 'Memories', href: '#memories' },
+    { id: 'videos', label: 'Videos', href: '#videos' },
+    { id: 'wall', label: 'Memory Wall', href: '#wall' },
+    { id: 'people', label: 'Roster', href: '#people' }
   ];
 
   return (
     <>
-      {/* Top Floating Glass Navigation Header */}
+      {/* Top Fixed Premium Navigation Header for Laptop & Tablet Viewports */}
       <header
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
           isScrolled
-            ? 'bg-[#050B18]/90 backdrop-blur-xl border-b border-[#D4AF37]/20 py-3 shadow-2xl shadow-black/40'
-            : 'bg-gradient-to-b from-[#050B18]/90 to-transparent py-4'
+            ? 'bg-[#050B18]/90 backdrop-blur-2xl border-b border-[#D4AF37]/30 py-3.5 shadow-2xl shadow-black/80'
+            : 'bg-gradient-to-b from-[#050B18]/95 via-[#050B18]/70 to-transparent py-4'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           {/* Logo / Brand */}
           <a
             href="#hero"
-            className="flex items-center gap-2.5 group focus:outline-none"
+            className="flex items-center gap-2.5 group focus:outline-none shrink-0"
           >
             <div className="w-9 h-9 rounded-lg bg-gradient-to-tr from-[#0E1E40] to-[#071024] border border-[#D4AF37]/40 flex items-center justify-center shadow-md group-hover:border-[#D4AF37] transition-colors">
               <GraduationCap className="w-5 h-5 text-[#D4AF37]" />
@@ -146,24 +147,49 @@ export const Navigation: React.FC<NavigationProps> = () => {
             </div>
           </a>
 
-          {/* Desktop Nav Links */}
-          <nav className="hidden md:flex items-center gap-6 text-[11px] font-semibold uppercase tracking-[0.25em] text-[#CBD5E1]">
-            {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                className="hover:text-[#D4AF37] transition-colors py-1 relative group"
-              >
-                <span>{link.label}</span>
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#D4AF37] group-hover:w-full transition-all duration-300" />
-              </a>
-            ))}
+          {/* Laptop & Tablet Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center gap-1 lg:gap-2 px-3 py-1.5 rounded-full bg-[#0A1630]/80 border border-[#D4AF37]/30 backdrop-blur-xl shadow-lg">
+            {navLinks.map((link) => {
+              const isActive = activeSection === link.id;
+              return (
+                <a
+                  key={link.id}
+                  href={link.href}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActiveSection(link.id);
+                    const targetEl = document.getElementById(link.id);
+                    if (targetEl) {
+                      targetEl.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                  className={`relative px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-[0.18em] transition-all duration-300 ${
+                    isActive
+                      ? 'text-[#050B18] bg-gradient-to-r from-[#D4AF37] via-[#FFF7D6] to-[#D4AF37] shadow-md shadow-[#D4AF37]/30 font-extrabold scale-105'
+                      : 'text-[#CBD5E1] hover:text-[#FFF7D6] hover:bg-white/5'
+                  }`}
+                >
+                  {link.label}
+                </a>
+              );
+            })}
           </nav>
+
+          {/* Laptop Right Action CTA */}
+          <div className="hidden md:flex items-center gap-3">
+            <a
+              href="#create-memory"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B38F24] text-[#050B18] text-[11px] font-extrabold uppercase tracking-wider shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Time Capsule</span>
+            </a>
+          </div>
         </div>
       </header>
 
-      {/* Ultra-Premium Floating Bottom Dock with Custom HD Vector SVG Icons */}
-      <div className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 w-[95vw] sm:w-auto max-w-xl pointer-events-auto">
+      {/* Floating Bottom Navigation Dock (Visible ONLY on Mobile; Hidden on Laptop & Tablet viewports via `md:hidden`) */}
+      <div className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 w-[95vw] sm:w-auto max-w-xl pointer-events-auto md:hidden">
         <motion.nav
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
