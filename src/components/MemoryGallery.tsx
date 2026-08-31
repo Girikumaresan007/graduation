@@ -12,6 +12,9 @@ export const MemoryGallery: React.FC<MemoryGalleryProps> = ({ onNavigateToGaller
     typeof window !== 'undefined' ? window.innerWidth < 640 : false
   );
 
+  // Automatic slideshow rotation index for the 3 stack images
+  const [photoStartIndex, setPhotoStartIndex] = useState<number>(0);
+
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 640);
@@ -20,8 +23,20 @@ export const MemoryGallery: React.FC<MemoryGalleryProps> = ({ onNavigateToGaller
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Top 3 photo memories for the homepage stack
-  const stackPhotos = photoMemories.slice(0, 3);
+  // Automatically cycle through 3 images every 3.5 seconds across all devices
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setPhotoStartIndex((prev) => (prev + 3) % photoMemories.length);
+    }, 3500);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Top 3 photo memories dynamically cycled
+  const stackPhotos = [
+    photoMemories[photoStartIndex % photoMemories.length],
+    photoMemories[(photoStartIndex + 1) % photoMemories.length],
+    photoMemories[(photoStartIndex + 2) % photoMemories.length]
+  ];
 
   const handleCardClick = (photoId: string) => {
     if (onNavigateToGallery) {
@@ -81,7 +96,7 @@ export const MemoryGallery: React.FC<MemoryGalleryProps> = ({ onNavigateToGaller
         </motion.p>
       </div>
 
-      {/* Overlapping 3-Photo Fan Stack - Framer Motion X Offset Enabled */}
+      {/* Overlapping 3-Photo Fan Stack - Automatic Cycling Enabled */}
       <div className="relative z-10 w-full max-w-4xl h-[260px] xs:h-[300px] sm:h-[400px] flex items-center justify-center mb-10 sm:mb-12 touch-pan-y overflow-visible">
         {stackPhotos.map((photo, index) => {
           const pos = stackPositions[index] || stackPositions[0];
@@ -89,9 +104,9 @@ export const MemoryGallery: React.FC<MemoryGalleryProps> = ({ onNavigateToGaller
 
           return (
             <motion.div
-              key={photo.id}
+              key={`${photo.id}-${index}`}
               initial={{ opacity: 0, scale: 0.85, x: posX, y: 25 }}
-              whileInView={{
+              animate={{
                 opacity: 1,
                 scale: 1,
                 rotate: pos.rotation,
@@ -99,12 +114,11 @@ export const MemoryGallery: React.FC<MemoryGalleryProps> = ({ onNavigateToGaller
                 y: pos.y,
                 zIndex: pos.zIndex,
               }}
-              viewport={{ once: true }}
               transition={{
+                duration: 0.6,
                 type: 'spring',
-                stiffness: 180,
+                stiffness: 160,
                 damping: 18,
-                delay: index * 0.1,
               }}
               whileHover={{
                 scale: 1.07,
@@ -122,7 +136,7 @@ export const MemoryGallery: React.FC<MemoryGalleryProps> = ({ onNavigateToGaller
                 height: 'clamp(155px, 44vw, 270px)',
               }}
             >
-              {/* Photo Image & Title Overlay */}
+              {/* Clean Photo Image - Text Badge Removed */}
               <div className="w-full h-full relative overflow-hidden bg-black/50">
                 <img
                   src={photo.image}
@@ -130,14 +144,7 @@ export const MemoryGallery: React.FC<MemoryGalleryProps> = ({ onNavigateToGaller
                   loading="lazy"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 filter brightness-95 group-hover:brightness-105 pointer-events-none"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#050B18]/85 via-transparent to-transparent opacity-75 group-hover:opacity-40 transition-opacity" />
-
-                {/* Photo Badge Overlay */}
-                <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between opacity-95 group-hover:opacity-100 transition-opacity">
-                  <span className="text-[8px] sm:text-[10px] font-bold tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-[#050B18]/90 text-[#D4AF37] border border-[#D4AF37]/50 backdrop-blur-md truncate max-w-[90%]">
-                    {photo.year} • {photo.title}
-                  </span>
-                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-[#050B18]/40 via-transparent to-transparent opacity-60 group-hover:opacity-20 transition-opacity" />
               </div>
             </motion.div>
           );

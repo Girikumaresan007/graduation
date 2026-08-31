@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ArrowLeft,
-  Heart,
+  RotateCw,
   X,
   ChevronLeft,
   ChevronRight,
@@ -41,20 +41,36 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onBackToHome, initialP
     return null;
   });
 
-  // Video Player state
+  // Photo Auto-Rotate state (degree rotation per photo)
+  const [photoRotationMap, setPhotoRotationMap] = useState<Record<string, number>>({});
+
+  const handleRotatePhoto = (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setPhotoRotationMap((prev) => ({
+      ...prev,
+      [id]: ((prev[id] || 0) + 90) % 360
+    }));
+  };
+
+  // Video Player state & Navigation
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
 
-  // Photo Likes state
-  const [likesMap, setLikesMap] = useState<Record<string, number>>(() => {
-    const map: Record<string, number> = {};
-    photoMemories.forEach((p) => {
-      map[p.id] = p.likes;
-    });
-    return map;
-  });
-  const [likedByUser, setLikedByUser] = useState<Record<string, boolean>>({});
+  const activePhotoIndex = activePhoto ? photoMemories.findIndex((p) => p.id === activePhoto.id) : -1;
+  const activeVideoIndex = activeVideo ? videoMemories.findIndex((v) => v.id === activeVideo.id) : -1;
 
-  // Touch Swipe coordinates for Mobile Photo Lightbox
+  const handleNextVideo = () => {
+    if (activeVideoIndex >= 0 && activeVideoIndex < videoMemories.length - 1) {
+      setActiveVideo(videoMemories[activeVideoIndex + 1]);
+    }
+  };
+
+  const handlePrevVideo = () => {
+    if (activeVideoIndex > 0) {
+      setActiveVideo(videoMemories[activeVideoIndex - 1]);
+    }
+  };
+
+  // Touch Swipe coordinates for Mobile Lightbox
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
 
@@ -63,35 +79,36 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onBackToHome, initialP
   }, []);
 
   const handleNextPhoto = () => {
-    if (!activePhoto) return;
-    const currentIndex = photoMemories.findIndex((p) => p.id === activePhoto.id);
-    const nextIndex = (currentIndex + 1) % photoMemories.length;
-    setActivePhoto(photoMemories[nextIndex]);
+    if (activePhotoIndex >= 0 && activePhotoIndex < photoMemories.length - 1) {
+      setActivePhoto(photoMemories[activePhotoIndex + 1]);
+    }
   };
 
   const handlePrevPhoto = () => {
-    if (!activePhoto) return;
-    const currentIndex = photoMemories.findIndex((p) => p.id === activePhoto.id);
-    const prevIndex = (currentIndex - 1 + photoMemories.length) % photoMemories.length;
-    setActivePhoto(photoMemories[prevIndex]);
+    if (activePhotoIndex > 0) {
+      setActivePhoto(photoMemories[activePhotoIndex - 1]);
+    }
   };
 
-  // Keyboard navigation for Lightbox
+  // Keyboard navigation for Lightbox & Video Modal
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (activePhoto) {
         if (e.key === 'Escape') setActivePhoto(null);
         else if (e.key === 'ArrowRight') handleNextPhoto();
         else if (e.key === 'ArrowLeft') handlePrevPhoto();
+        else if (e.key === 'r' || e.key === 'R') handleRotatePhoto(activePhoto.id);
       } else if (activeVideo) {
         if (e.key === 'Escape') setActiveVideo(null);
+        else if (e.key === 'ArrowRight') handleNextVideo();
+        else if (e.key === 'ArrowLeft') handlePrevVideo();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activePhoto, activeVideo]);
 
-  // Touch Swipe Handlers for Lightbox
+  // Touch Swipe Handlers
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.targetTouches[0].clientX;
   };
@@ -106,26 +123,15 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onBackToHome, initialP
     const minSwipeDistance = 40;
 
     if (distance > minSwipeDistance) {
-      handleNextPhoto();
+      if (activePhoto) handleNextPhoto();
+      else if (activeVideo) handleNextVideo();
     } else if (distance < -minSwipeDistance) {
-      handlePrevPhoto();
+      if (activePhoto) handlePrevPhoto();
+      else if (activeVideo) handlePrevVideo();
     }
 
     touchStartX.current = null;
     touchEndX.current = null;
-  };
-
-  const handleLike = (id: string, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    setLikedByUser((prev) => {
-      const isCurrentlyLiked = !!prev[id];
-      const newStatus = !isCurrentlyLiked;
-      setLikesMap((prevLikes) => ({
-        ...prevLikes,
-        [id]: (prevLikes[id] || 0) + (newStatus ? 1 : -1)
-      }));
-      return { ...prev, [id]: newStatus };
-    });
   };
 
   const getCardRotation = (idx: number) => {
@@ -188,16 +194,15 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onBackToHome, initialP
 
       {/* Main Gallery Container */}
       <main className="max-w-7xl mx-auto px-3 sm:px-6 md:px-8 pt-6 sm:pt-8 pb-16">
-        
+
         {/* TWO CATEGORY TABS ONLY: Photos & Videos */}
         <div className="flex items-center justify-center gap-3 mb-8 sm:mb-10">
           <button
             onClick={() => setActiveTab('photos')}
-            className={`flex items-center gap-2 px-6 sm:px-8 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-bold tracking-wider uppercase transition-all duration-300 cursor-pointer ${
-              activeTab === 'photos'
+            className={`flex items-center gap-2 px-6 sm:px-8 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-bold tracking-wider uppercase transition-all duration-300 cursor-pointer ${activeTab === 'photos'
                 ? 'bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#D4AF37] text-[#050B18] shadow-lg shadow-[#D4AF37]/25 scale-105 border border-[#D4AF37]'
                 : 'bg-[#0A1630] text-[#CBD5E1] border border-[#D4AF37]/20 hover:border-[#D4AF37]/50 hover:text-[#FDFCF0]'
-            }`}
+              }`}
           >
             <Camera className="w-4 h-4" />
             <span>Photos</span>
@@ -205,11 +210,10 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onBackToHome, initialP
 
           <button
             onClick={() => setActiveTab('videos')}
-            className={`flex items-center gap-2 px-6 sm:px-8 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-bold tracking-wider uppercase transition-all duration-300 cursor-pointer ${
-              activeTab === 'videos'
+            className={`flex items-center gap-2 px-6 sm:px-8 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-bold tracking-wider uppercase transition-all duration-300 cursor-pointer ${activeTab === 'videos'
                 ? 'bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#D4AF37] text-[#050B18] shadow-lg shadow-[#D4AF37]/25 scale-105 border border-[#D4AF37]'
                 : 'bg-[#0A1630] text-[#CBD5E1] border border-[#D4AF37]/20 hover:border-[#D4AF37]/50 hover:text-[#FDFCF0]'
-            }`}
+              }`}
           >
             <Film className="w-4 h-4" />
             <span>Videos</span>
@@ -230,6 +234,7 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onBackToHome, initialP
               >
                 {paginatedPhotos.map((photo, idx) => {
                   const initialRotation = getCardRotation(idx);
+                  const userRotation = photoRotationMap[photo.id] || 0;
 
                   return (
                     <motion.div
@@ -250,27 +255,31 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onBackToHome, initialP
                       className="group relative rounded-2xl sm:rounded-[2rem] overflow-hidden bg-[#0A1630] border-[4px] sm:border-[5px] border-[#0A1630] ring-1 ring-[#D4AF37]/35 shadow-[0_15px_35px_rgba(0,0,0,0.5)] cursor-pointer transition-shadow duration-300 hover:shadow-[0_20px_45px_rgba(212,175,55,0.2)]"
                     >
                       {/* Clean Image Container */}
-                      <div className="w-full aspect-[4/3] sm:aspect-square overflow-hidden bg-black/40 relative">
+                      <div className="w-full aspect-[4/3] sm:aspect-square overflow-hidden bg-black/40 relative flex items-center justify-center">
                         <img
                           src={photo.image}
                           alt={photo.title}
                           loading="lazy"
+                          style={{ transform: `rotate(${userRotation}deg)` }}
+                          onError={(e) => {
+                            const target = e.currentTarget;
+                            if (target.src.includes('/images_opt/')) {
+                              const filename = target.src.split('/images_opt/')[1].replace('.webp', '.jpg');
+                              target.src = `/images/${filename}`;
+                            }
+                          }}
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-108 filter brightness-95 group-hover:brightness-105"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#050B18]/60 via-transparent to-transparent opacity-50 group-hover:opacity-30 transition-opacity" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#050B18]/60 via-transparent to-transparent opacity-50 group-hover:opacity-30 transition-opacity pointer-events-none" />
 
-                        {/* Top Right Like Button */}
-                        <div className="absolute top-2 right-2 pointer-events-auto">
+                        {/* Top Right Auto-Rotate Button */}
+                        <div className="absolute top-2 right-2 pointer-events-auto z-10">
                           <button
-                            onClick={(e) => handleLike(photo.id, e)}
-                            className={`p-1.5 rounded-full backdrop-blur-md transition-colors ${
-                              likedByUser[photo.id]
-                                ? 'bg-red-500/20 text-red-400 border border-red-500/40'
-                                : 'bg-black/60 text-white/80 hover:text-red-400 border border-white/10'
-                            }`}
-                            title="Like photo"
+                            onClick={(e) => handleRotatePhoto(photo.id, e)}
+                            className="p-1.5 sm:p-2 rounded-full bg-black/70 hover:bg-[#D4AF37] text-white hover:text-[#050B18] border border-white/20 backdrop-blur-md transition-all active:scale-90 shadow-md cursor-pointer"
+                            title="Rotate photo 90°"
                           >
-                            <Heart className={`w-3.5 h-3.5 ${likedByUser[photo.id] ? 'fill-current' : ''}`} />
+                            <RotateCw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                           </button>
                         </div>
                       </div>
@@ -279,46 +288,54 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onBackToHome, initialP
                 })}
               </motion.div>
 
-              {/* Photos Pagination Bar */}
+              {/* Photos Pagination Bar - Clean Compact Row without horizontal scroll */}
               {totalPhotoPages > 1 && (
-                <div className="flex items-center justify-center gap-2 mt-10 sm:mt-14 pt-6 border-t border-white/10">
+                <div className="flex items-center justify-center gap-2 sm:gap-3 mt-8 sm:mt-12 pt-6 border-t border-white/10 w-full px-2">
                   <button
                     onClick={() => handlePhotoPageChange(validPhotosPage - 1)}
                     disabled={validPhotosPage === 1}
-                    className={`flex items-center gap-1 px-3.5 py-2 rounded-full text-xs font-semibold tracking-wider transition-all ${
-                      validPhotosPage === 1
+                    className={`flex items-center gap-1 px-3.5 sm:px-4 py-2 rounded-full text-xs font-semibold tracking-wider transition-all ${validPhotosPage === 1
                         ? 'opacity-40 cursor-not-allowed bg-[#0A1630] text-[#94A3B8] border border-white/10'
                         : 'bg-[#0A1630] hover:bg-[#122244] text-[#FDFCF0] hover:text-[#D4AF37] border border-[#D4AF37]/30 hover:border-[#D4AF37] cursor-pointer active:scale-95'
-                    }`}
+                      }`}
                   >
                     <ChevronLeft className="w-4 h-4 text-[#D4AF37]" />
                     <span>Prev</span>
                   </button>
 
-                  <div className="flex items-center gap-1.5 px-2">
-                    {Array.from({ length: totalPhotoPages }, (_, i) => i + 1).map((pageNum) => (
-                      <button
-                        key={pageNum}
-                        onClick={() => handlePhotoPageChange(pageNum)}
-                        className={`w-8 h-8 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                          validPhotosPage === pageNum
-                            ? 'bg-[#D4AF37] text-[#050B18] shadow-md scale-105 border border-[#D4AF37]'
-                            : 'bg-[#0A1630] text-[#CBD5E1] border border-[#D4AF37]/20 hover:border-[#D4AF37]/50 hover:text-[#FDFCF0]'
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    ))}
+                  <div className="flex items-center gap-1 sm:gap-1.5">
+                    {Array.from({ length: totalPhotoPages }, (_, i) => i + 1)
+                      .filter((p) => p === 1 || p === totalPhotoPages || Math.abs(p - validPhotosPage) <= 1)
+                      .map((pageNum, i, arr) => {
+                        const prevPage = arr[i - 1];
+                        const showEllipsis = prevPage && pageNum - prevPage > 1;
+
+                        return (
+                          <React.Fragment key={pageNum}>
+                            {showEllipsis && (
+                              <span className="text-xs text-[#94A3B8] px-0.5 font-bold">...</span>
+                            )}
+                            <button
+                              onClick={() => handlePhotoPageChange(pageNum)}
+                              className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full text-xs font-bold transition-all cursor-pointer shrink-0 ${validPhotosPage === pageNum
+                                  ? 'bg-[#D4AF37] text-[#050B18] shadow-md scale-105 border border-[#D4AF37]'
+                                  : 'bg-[#0A1630] text-[#CBD5E1] border border-[#D4AF37]/20 hover:border-[#D4AF37]/50 hover:text-[#FDFCF0]'
+                                }`}
+                            >
+                              {pageNum}
+                            </button>
+                          </React.Fragment>
+                        );
+                      })}
                   </div>
 
                   <button
                     onClick={() => handlePhotoPageChange(validPhotosPage + 1)}
                     disabled={validPhotosPage === totalPhotoPages}
-                    className={`flex items-center gap-1 px-3.5 py-2 rounded-full text-xs font-semibold tracking-wider transition-all ${
-                      validPhotosPage === totalPhotoPages
+                    className={`flex items-center gap-1 px-3.5 sm:px-4 py-2 rounded-full text-xs font-semibold tracking-wider transition-all ${validPhotosPage === totalPhotoPages
                         ? 'opacity-40 cursor-not-allowed bg-[#0A1630] text-[#94A3B8] border border-white/10'
                         : 'bg-[#0A1630] hover:bg-[#122244] text-[#FDFCF0] hover:text-[#D4AF37] border border-[#D4AF37]/30 hover:border-[#D4AF37] cursor-pointer active:scale-95'
-                    }`}
+                      }`}
                   >
                     <span>Next</span>
                     <ChevronRight className="w-4 h-4 text-[#D4AF37]" />
@@ -347,12 +364,24 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onBackToHome, initialP
                     className="group relative rounded-2xl overflow-hidden bg-[#0A1630] border-[4px] sm:border-[5px] border-[#0A1630] ring-1 ring-[#D4AF37]/35 shadow-xl cursor-pointer transition-all duration-300 hover:-translate-y-1.5"
                   >
                     <div className="relative aspect-video w-full overflow-hidden bg-black">
-                      <img
-                        src={video.poster}
-                        alt={video.title}
-                        loading="lazy"
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 filter brightness-90 group-hover:brightness-100"
-                      />
+                      {video.poster ? (
+                        <img
+                          src={video.poster}
+                          alt={video.title}
+                          loading="lazy"
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 filter brightness-90 group-hover:brightness-100"
+                        />
+                      ) : (
+                        /* Native First-Frame Video Thumbnail Rendering */
+                        <video
+                          src={`${video.videoUrl}#t=0.5`}
+                          preload="metadata"
+                          muted
+                          playsInline
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 filter brightness-90 group-hover:brightness-100 pointer-events-none"
+                        />
+                      )}
+
                       <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors" />
 
                       {/* Play Button Overlay */}
@@ -361,59 +390,59 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onBackToHome, initialP
                           <Play className="w-5 h-5 fill-current ml-0.5" />
                         </div>
                       </div>
-
-                      {/* Duration Badge */}
-                      <div className="absolute top-3 right-3">
-                        <span className="text-[10px] tracking-wider px-2.5 py-0.5 rounded-full bg-black/75 text-[#FDFCF0] font-medium flex items-center gap-1 backdrop-blur-sm border border-white/10">
-                          <Clock className="w-3 h-3 text-[#D4AF37]" />
-                          {video.duration}
-                        </span>
-                      </div>
                     </div>
                   </motion.div>
                 ))}
               </motion.div>
 
-              {/* Videos Pagination Bar */}
+              {/* Videos Pagination Bar - Clean Compact Row without horizontal scroll */}
               {totalVideoPages > 1 && (
-                <div className="flex items-center justify-center gap-2 mt-10 sm:mt-14 pt-6 border-t border-white/10">
+                <div className="flex items-center justify-center gap-2 sm:gap-3 mt-8 sm:mt-12 pt-6 border-t border-white/10 w-full px-2">
                   <button
                     onClick={() => handleVideoPageChange(validVideosPage - 1)}
                     disabled={validVideosPage === 1}
-                    className={`flex items-center gap-1 px-3.5 py-2 rounded-full text-xs font-semibold tracking-wider transition-all ${
-                      validVideosPage === 1
+                    className={`flex items-center gap-1 px-3.5 sm:px-4 py-2 rounded-full text-xs font-semibold tracking-wider transition-all ${validVideosPage === 1
                         ? 'opacity-40 cursor-not-allowed bg-[#0A1630] text-[#94A3B8] border border-white/10'
                         : 'bg-[#0A1630] hover:bg-[#122244] text-[#FDFCF0] hover:text-[#D4AF37] border border-[#D4AF37]/30 hover:border-[#D4AF37] cursor-pointer active:scale-95'
-                    }`}
+                      }`}
                   >
                     <ChevronLeft className="w-4 h-4 text-[#D4AF37]" />
                     <span>Prev</span>
                   </button>
 
-                  <div className="flex items-center gap-1.5 px-2">
-                    {Array.from({ length: totalVideoPages }, (_, i) => i + 1).map((pageNum) => (
-                      <button
-                        key={pageNum}
-                        onClick={() => handleVideoPageChange(pageNum)}
-                        className={`w-8 h-8 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                          validVideosPage === pageNum
-                            ? 'bg-[#D4AF37] text-[#050B18] shadow-md scale-105 border border-[#D4AF37]'
-                            : 'bg-[#0A1630] text-[#CBD5E1] border border-[#D4AF37]/20 hover:border-[#D4AF37]/50 hover:text-[#FDFCF0]'
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    ))}
+                  <div className="flex items-center gap-1 sm:gap-1.5">
+                    {Array.from({ length: totalVideoPages }, (_, i) => i + 1)
+                      .filter((p) => p === 1 || p === totalVideoPages || Math.abs(p - validVideosPage) <= 1)
+                      .map((pageNum, i, arr) => {
+                        const prevPage = arr[i - 1];
+                        const showEllipsis = prevPage && pageNum - prevPage > 1;
+
+                        return (
+                          <React.Fragment key={pageNum}>
+                            {showEllipsis && (
+                              <span className="text-xs text-[#94A3B8] px-0.5 font-bold">...</span>
+                            )}
+                            <button
+                              onClick={() => handleVideoPageChange(pageNum)}
+                              className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full text-xs font-bold transition-all cursor-pointer shrink-0 ${validVideosPage === pageNum
+                                  ? 'bg-[#D4AF37] text-[#050B18] shadow-md scale-105 border border-[#D4AF37]'
+                                  : 'bg-[#0A1630] text-[#CBD5E1] border border-[#D4AF37]/20 hover:border-[#D4AF37]/50 hover:text-[#FDFCF0]'
+                                }`}
+                            >
+                              {pageNum}
+                            </button>
+                          </React.Fragment>
+                        );
+                      })}
                   </div>
 
                   <button
                     onClick={() => handleVideoPageChange(validVideosPage + 1)}
                     disabled={validVideosPage === totalVideoPages}
-                    className={`flex items-center gap-1 px-3.5 py-2 rounded-full text-xs font-semibold tracking-wider transition-all ${
-                      validVideosPage === totalVideoPages
+                    className={`flex items-center gap-1 px-3.5 sm:px-4 py-2 rounded-full text-xs font-semibold tracking-wider transition-all ${validVideosPage === totalVideoPages
                         ? 'opacity-40 cursor-not-allowed bg-[#0A1630] text-[#94A3B8] border border-white/10'
                         : 'bg-[#0A1630] hover:bg-[#122244] text-[#FDFCF0] hover:text-[#D4AF37] border border-[#D4AF37]/30 hover:border-[#D4AF37] cursor-pointer active:scale-95'
-                    }`}
+                      }`}
                   >
                     <span>Next</span>
                     <ChevronRight className="w-4 h-4 text-[#D4AF37]" />
@@ -425,14 +454,14 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onBackToHome, initialP
         </div>
       </main>
 
-      {/* Clean Fullscreen Photo Lightbox Modal - NO Text Panel */}
+      {/* Fullscreen Photo Lightbox Modal - Fully Mobile Optimized */}
       <AnimatePresence>
         {activePhoto && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-2xl p-3 sm:p-6 select-none"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-2xl p-2 sm:p-6 select-none"
             onClick={() => setActivePhoto(null)}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
@@ -443,93 +472,121 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onBackToHome, initialP
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.92, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative max-w-5xl w-full max-h-[92vh] bg-black border border-[#D4AF37]/40 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl flex items-center justify-center"
+              className="relative max-w-5xl w-full max-h-[95vh] bg-black border border-[#D4AF37]/40 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl flex items-center justify-center p-1 sm:p-4"
             >
-              {/* Close Button */}
-              <button
-                onClick={() => setActivePhoto(null)}
-                className="absolute top-4 right-4 z-30 p-2.5 rounded-full bg-black/70 text-[#FDFCF0] hover:text-[#D4AF37] border border-white/20 transition-colors cursor-pointer"
-                aria-label="Close photo viewer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              {/* Like Heart Button */}
-              <button
-                onClick={(e) => handleLike(activePhoto.id, e)}
-                className={`absolute top-4 left-4 z-30 p-2.5 rounded-full backdrop-blur-md transition-colors cursor-pointer ${
-                  likedByUser[activePhoto.id]
-                    ? 'bg-red-500/20 text-red-400 border border-red-500/40'
-                    : 'bg-black/70 text-white/80 hover:text-red-400 border border-white/20'
-                }`}
-                aria-label="Like photo"
-              >
-                <Heart className={`w-5 h-5 ${likedByUser[activePhoto.id] ? 'fill-current' : ''}`} />
-              </button>
+              {/* Top Right Action Bar (Close & Rotate) - Visible above photo on mobile */}
+              <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-40 flex items-center gap-2">
+                <button
+                  onClick={(e) => handleRotatePhoto(activePhoto.id, e)}
+                  className="p-2 sm:p-2.5 rounded-full bg-black/80 text-[#FDFCF0] hover:text-[#D4AF37] border border-white/20 transition-all cursor-pointer backdrop-blur-md active:scale-90"
+                  title="Rotate photo 90°"
+                  aria-label="Rotate photo"
+                >
+                  <RotateCw className="w-4 h-4 sm:w-5 sm:h-5 text-[#D4AF37]" />
+                </button>
+                <button
+                  onClick={() => setActivePhoto(null)}
+                  className="p-2 sm:p-2.5 rounded-full bg-black/80 text-[#FDFCF0] hover:text-[#D4AF37] border border-white/20 transition-all cursor-pointer backdrop-blur-md active:scale-90"
+                  aria-label="Close photo viewer"
+                >
+                  <X className="w-4 h-4 sm:w-5 sm:h-5" />
+                </button>
+              </div>
 
               {/* Full Image */}
-              <div className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden min-h-[300px] max-h-[88vh] p-2">
+              <div className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden min-h-[280px] max-h-[88vh] p-1">
                 <img
                   src={activePhoto.image}
                   alt={activePhoto.title}
-                  className="w-full h-full object-contain pointer-events-none max-h-[85vh]"
+                  style={{ transform: `rotate(${photoRotationMap[activePhoto.id] || 0}deg)` }}
+                  className="w-full h-full object-contain pointer-events-none max-h-[82vh] transition-transform duration-300"
                 />
 
-                {/* Left/Right Carousel Nav Arrows */}
-                <button
-                  onClick={handlePrevPhoto}
-                  className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 p-2.5 sm:p-3.5 rounded-full bg-black/65 hover:bg-black/90 text-white border border-white/20 transition-all cursor-pointer z-20"
-                  aria-label="Previous photo"
-                >
-                  <ChevronLeft className="w-6 h-6" />
-                </button>
-                <button
-                  onClick={handleNextPhoto}
-                  className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 p-2.5 sm:p-3.5 rounded-full bg-black/65 hover:bg-black/90 text-white border border-white/20 transition-all cursor-pointer z-20"
-                  aria-label="Next photo"
-                >
-                  <ChevronRight className="w-6 h-6" />
-                </button>
+                {/* Mobile & Desktop Carousel Nav Arrows */}
+                {activePhotoIndex > 0 && (
+                  <button
+                    onClick={handlePrevPhoto}
+                    className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 p-2 sm:p-3.5 rounded-full bg-black/75 hover:bg-black/90 text-white border border-white/20 transition-all cursor-pointer z-30 shadow-xl active:scale-90"
+                    aria-label="Previous photo"
+                  >
+                    <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+                  </button>
+                )}
+                {activePhotoIndex >= 0 && activePhotoIndex < photoMemories.length - 1 && (
+                  <button
+                    onClick={handleNextPhoto}
+                    className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 p-2 sm:p-3.5 rounded-full bg-black/75 hover:bg-black/90 text-white border border-white/20 transition-all cursor-pointer z-30 shadow-xl active:scale-90"
+                    aria-label="Next photo"
+                  >
+                    <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+                  </button>
+                )}
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Clean Video Modal Player - NO Text Content */}
+      {/* Video Modal Player - Fully Mobile Optimized */}
       <AnimatePresence>
         {activeVideo && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-2xl p-4 sm:p-6"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-2xl p-2 sm:p-6 select-none"
             onClick={() => setActiveVideo(null)}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative max-w-4xl w-full bg-black border border-[#D4AF37]/40 rounded-2xl overflow-hidden shadow-2xl"
+              className="relative max-w-5xl w-full bg-black border border-[#D4AF37]/40 rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center p-1 sm:p-4"
             >
               <button
                 onClick={() => setActiveVideo(null)}
-                className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-black/70 text-[#FDFCF0] hover:text-[#D4AF37] transition-colors border border-white/20 cursor-pointer"
+                className="absolute top-3 right-3 sm:top-4 sm:right-4 z-40 p-2 sm:p-2.5 rounded-full bg-black/80 text-[#FDFCF0] hover:text-[#D4AF37] transition-all border border-white/20 cursor-pointer backdrop-blur-md active:scale-90"
                 aria-label="Close video player"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
 
-              <div className="relative aspect-video w-full bg-black">
+              <div className="relative aspect-video w-full bg-black flex items-center justify-center min-h-[250px]">
                 <video
+                  key={activeVideo.id}
                   src={activeVideo.videoUrl}
-                  poster={activeVideo.poster}
+                  poster={activeVideo.poster || undefined}
                   controls
                   autoPlay
                   playsInline
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain max-h-[82vh]"
                 />
+
+                {/* Mobile & Desktop Video Backward (Prev) Arrow Button */}
+                {activeVideoIndex > 0 && (
+                  <button
+                    onClick={handlePrevVideo}
+                    className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 p-2 sm:p-3.5 rounded-full bg-black/75 hover:bg-black/90 text-white border border-white/20 transition-all cursor-pointer z-30 shadow-xl active:scale-90"
+                    aria-label="Previous video"
+                  >
+                    <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+                  </button>
+                )}
+
+                {/* Mobile & Desktop Video Forward (Next) Arrow Button */}
+                {activeVideoIndex >= 0 && activeVideoIndex < videoMemories.length - 1 && (
+                  <button
+                    onClick={handleNextVideo}
+                    className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 p-2 sm:p-3.5 rounded-full bg-black/75 hover:bg-black/90 text-white border border-white/20 transition-all cursor-pointer z-30 shadow-xl active:scale-90"
+                    aria-label="Next video"
+                  >
+                    <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+                  </button>
+                )}
               </div>
             </motion.div>
           </motion.div>

@@ -87,18 +87,28 @@ export const Navigation: React.FC<NavigationProps> = () => {
   ];
 
   useEffect(() => {
+    let ticking = false;
+    const sections = ['people', 'wall', 'videos', 'memories', 'timeline', 'story', 'hero'];
+
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrollY = window.scrollY;
+          const shouldBeScrolled = scrollY > 50;
+          setIsScrolled((prev) => (prev !== shouldBeScrolled ? shouldBeScrolled : prev));
 
-      const sections = bottomNavItems.map((item) => item.id);
-      const scrollPos = window.scrollY + 250;
-
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const secEl = document.getElementById(sections[i]);
-        if (secEl && secEl.offsetTop <= scrollPos) {
-          setActiveSection(sections[i]);
-          break;
-        }
+          const scrollPos = scrollY + 250;
+          for (let i = 0; i < sections.length; i++) {
+            const secEl = document.getElementById(sections[i]);
+            if (secEl && secEl.offsetTop <= scrollPos) {
+              const matched = sections[i];
+              setActiveSection((prev) => (prev !== matched ? matched : prev));
+              break;
+            }
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 

@@ -75,6 +75,24 @@
   animation: strokeAnim 3.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* Smooth custom scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
@@ -92,3 +110,9 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #D4AF37;
 }
+
+.gpu-layer {
+  transform: translateZ(0);
+  will-change: transform, opacity;
+}
+

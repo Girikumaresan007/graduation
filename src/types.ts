@@ -2,7 +2,7 @@ export interface MemoryItem {
   id: string;
   title: string;
   year: number;
-  category: 'Classroom' | 'Labs' | 'Symposium' | 'Canteen' | 'Tour' | 'Farewell' | 'Culturals';
+  category: 'Classroom' | 'Labs' | 'Symposium' | 'Canteen' | 'Tour' | 'Farewell' | 'Culturals' | 'College Days';
   image: string;
   caption: string;
   location?: string;

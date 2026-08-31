@@ -73,7 +73,7 @@ export const CollegeStory: React.FC = () => {
         >
           <div className="aspect-[4/3] w-full overflow-hidden relative">
             <img
-              src="https://images.unsplash.com/photo-1562774053-701939374585?q=80&w=1200&auto=format&fit=crop"
+              src="/images_opt/20240713_104947.webp"
               alt="K. Ramakrishnan College of Engineering Campus Boulevard"
               loading="lazy"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 filter brightness-90 contrast-105"
