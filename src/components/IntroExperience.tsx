@@ -13,6 +13,11 @@ export const IntroExperience: React.FC<IntroExperienceProps> = ({ onComplete }) 
   const [yearDisplay, setYearDisplay] = useState<string>('2021');
 
   useEffect(() => {
+    // Reset window scroll position to absolute top
+    window.scrollTo(0, 0);
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+
     // Lock scrolling on document body while intro is active
     const originalOverflow = document.body.style.overflow;
     const originalTouchAction = document.body.style.touchAction;

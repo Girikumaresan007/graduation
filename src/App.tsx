@@ -88,6 +88,13 @@ export default function App() {
     }
   };
 
+  const handleIntroComplete = () => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+    setIntroFinished(true);
+  };
+
   const handleScrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -116,7 +123,7 @@ export default function App() {
       {/* 1. Cinematic Opening Screen */}
       <AnimatePresence>
         {!introFinished && (
-          <IntroExperience onComplete={() => setIntroFinished(true)} />
+          <IntroExperience onComplete={handleIntroComplete} />
         )}
       </AnimatePresence>
 
@@ -139,46 +146,48 @@ export default function App() {
       <div className="fixed top-0 left-1/4 w-[500px] h-[500px] bg-[#122244]/15 rounded-full blur-[140px] pointer-events-none z-0" />
       <div className="fixed bottom-0 right-1/4 w-[600px] h-[600px] bg-[#D4AF37]/5 rounded-full blur-[160px] pointer-events-none z-0" />
 
-      {/* Side Vertical Year Rail */}
-      <aside className="fixed right-6 lg:right-8 top-1/2 -translate-y-1/2 hidden xl:flex flex-col gap-6 items-center z-30 pointer-events-auto">
-        <div className="h-24 w-[1px] bg-gradient-to-b from-transparent via-[#D4AF37]/40 to-transparent" />
-        <div className="flex flex-col gap-5 text-[10px] font-bold tracking-[0.4em] text-[#FDFCF0]/40 [writing-mode:vertical-lr] rotate-180">
-          <button
-            onClick={() => handleYearEasterEgg('2021')}
-            className="hover:text-[#D4AF37] hover:scale-110 transition-all cursor-pointer"
-          >
-            2021
-          </button>
-          <button
-            onClick={() => handleYearEasterEgg('2022')}
-            className="hover:text-[#D4AF37] hover:scale-110 transition-all cursor-pointer"
-          >
-            2022
-          </button>
-          <button
-            onClick={() => handleYearEasterEgg('2023')}
-            className="hover:text-[#D4AF37] hover:scale-110 transition-all cursor-pointer"
-          >
-            2023
-          </button>
-          <button
-            onClick={() => handleYearEasterEgg('2024')}
-            className="hover:text-[#D4AF37] hover:scale-110 transition-all cursor-pointer"
-          >
-            2024
-          </button>
-          <button
-            onClick={() => handleYearEasterEgg('2025')}
-            className="text-[#D4AF37] opacity-100 scale-125 font-extrabold"
-          >
-            2025
-          </button>
-        </div>
-        <div className="h-24 w-[1px] bg-gradient-to-b from-transparent via-[#D4AF37]/40 to-transparent" />
-      </aside>
+      {/* Side Vertical Year Rail (Shown only after entering portal) */}
+      {introFinished && (
+        <aside className="fixed right-6 lg:right-8 top-1/2 -translate-y-1/2 hidden xl:flex flex-col gap-6 items-center z-30 pointer-events-auto">
+          <div className="h-24 w-[1px] bg-gradient-to-b from-transparent via-[#D4AF37]/40 to-transparent" />
+          <div className="flex flex-col gap-5 text-[10px] font-bold tracking-[0.4em] text-[#FDFCF0]/40 [writing-mode:vertical-lr] rotate-180">
+            <button
+              onClick={() => handleYearEasterEgg('2021')}
+              className="hover:text-[#D4AF37] hover:scale-110 transition-all cursor-pointer"
+            >
+              2021
+            </button>
+            <button
+              onClick={() => handleYearEasterEgg('2022')}
+              className="hover:text-[#D4AF37] hover:scale-110 transition-all cursor-pointer"
+            >
+              2022
+            </button>
+            <button
+              onClick={() => handleYearEasterEgg('2023')}
+              className="hover:text-[#D4AF37] hover:scale-110 transition-all cursor-pointer"
+            >
+              2023
+            </button>
+            <button
+              onClick={() => handleYearEasterEgg('2024')}
+              className="hover:text-[#D4AF37] hover:scale-110 transition-all cursor-pointer"
+            >
+              2024
+            </button>
+            <button
+              onClick={() => handleYearEasterEgg('2025')}
+              className="text-[#D4AF37] opacity-100 scale-125 font-extrabold"
+            >
+              2025
+            </button>
+          </div>
+          <div className="h-24 w-[1px] bg-gradient-to-b from-transparent via-[#D4AF37]/40 to-transparent" />
+        </aside>
+      )}
 
-      {/* 4. Main Navigation */}
-      <Navigation onEasterEggTrigger={handleYearEasterEgg} />
+      {/* 4. Main Navigation (Shown only after entering portal) */}
+      {introFinished && <Navigation onEasterEggTrigger={handleYearEasterEgg} />}
 
       {/* 5. Main Content Container */}
       <main className="relative z-10">
