@@ -8,37 +8,45 @@ interface IntroExperienceProps {
 }
 
 export const IntroExperience: React.FC<IntroExperienceProps> = ({ onComplete }) => {
-  const [step, setStep] = useState<number>(0);
+  // Start at step 1 immediately so the screen is never empty on load
+  const [step, setStep] = useState<number>(1);
   const [yearDisplay, setYearDisplay] = useState<string>('2021');
 
   useEffect(() => {
+    // Lock scrolling on document body while intro is active
+    const originalOverflow = document.body.style.overflow;
+    const originalTouchAction = document.body.style.touchAction;
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+
     const timeouts: ReturnType<typeof setTimeout>[] = [];
 
-    // Step 0: "Four years."
-    timeouts.push(setTimeout(() => setStep(1), 1000));
-    // Step 1: "Countless memories."
-    timeouts.push(setTimeout(() => setStep(2), 2200));
-    // Step 2: "One unforgettable chapter."
-    timeouts.push(setTimeout(() => setStep(3), 3400));
-    // Step 3: Morph to KRCE CSE A & Year count (starts at 4600ms)
+    // Line 1 "Four years." is visible from 0ms
+    // Step 2 (1000ms): "Countless memories."
+    timeouts.push(setTimeout(() => setStep(2), 1000));
+    // Step 3 (2100ms): "One unforgettable chapter."
+    timeouts.push(setTimeout(() => setStep(3), 2100));
+    // Step 4 (3200ms): Morph to KRCE CSE A & Batch header with year counting
     timeouts.push(
       setTimeout(() => {
         setStep(4);
-        // Morph year 2021 -> 2022 -> 2023 -> 2024 -> 2025 with 650ms per step
+        // Morph year 2021 -> 2022 -> 2023 -> 2024 -> 2025 (550ms interval)
         const years = ['2021', '2022', '2023', '2024', '2025'];
         years.forEach((yr, idx) => {
           timeouts.push(
             setTimeout(() => {
               setYearDisplay(yr);
-            }, idx * 650)
+            }, idx * 550)
           );
         });
-      }, 4600)
+      }, 3200)
     );
-    // Step 5: "Welcome to our memories" + Enter Button revealed later (at 8800ms)
-    timeouts.push(setTimeout(() => setStep(5), 8800));
+    // Step 5 (6800ms): "Welcome to our memories" + Enter Button revealed
+    timeouts.push(setTimeout(() => setStep(5), 6800));
 
     return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.touchAction = originalTouchAction;
       timeouts.forEach((t) => clearTimeout(t));
     };
   }, []);
@@ -46,7 +54,9 @@ export const IntroExperience: React.FC<IntroExperienceProps> = ({ onComplete }) 
   return (
     <div
       id="intro-experience-overlay"
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#050B18] text-[#FDFCF0] px-6 select-none overflow-hidden"
+      onWheel={(e) => e.preventDefault()}
+      onTouchMove={(e) => e.preventDefault()}
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#050B18] text-[#FDFCF0] px-6 select-none overflow-hidden touch-none"
     >
       {/* Background Star Ambient Dust */}
       <div className="absolute inset-0 pointer-events-none opacity-40">
