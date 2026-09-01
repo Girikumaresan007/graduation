@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import confetti from 'canvas-confetti';
 import { GraduationCap, Sparkles, PartyPopper, Heart, Award } from 'lucide-react';
+import { soundtrack } from '../utils/audioSynth';
 import { siteConfig } from '../data/site';
 
 export const GraduationCelebration: React.FC = () => {
@@ -9,6 +10,9 @@ export const GraduationCelebration: React.FC = () => {
   const [hasCelebrated, setHasCelebrated] = useState(false);
 
   const triggerCelebration = () => {
+    // Play celebratory graduation chime
+    soundtrack.playCelebrationChime();
+
     // Haptic vibration if supported on mobile
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
       try {
