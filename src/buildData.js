@@ -73,7 +73,9 @@ fs.writeFileSync(path.join(__dirname, 'data', 'memories.ts'), memoriesTsContent,
 console.log('Saved memories.ts with', photoMemories.length, 'items');
 
 // 2. Videos Processing with Exact Video Opt Check & Poster File Matching
-const vidFiles = fs.readdirSync(vidDir).filter(f => f.endsWith('.mp4'));
+const vidFilesFromVideo = fs.existsSync(vidDir) ? fs.readdirSync(vidDir).filter(f => f.endsWith('.mp4')) : [];
+const vidFilesFromOpt = fs.existsSync(vidOptDir) ? fs.readdirSync(vidOptDir).filter(f => f.endsWith('.mp4')) : [];
+const vidFiles = Array.from(new Set([...vidFilesFromVideo, ...vidFilesFromOpt]));
 const vidOptFiles = fs.existsSync(vidOptDir) ? fs.readdirSync(vidOptDir) : [];
 const vidOptMap = new Map();
 
@@ -113,8 +115,10 @@ const videoMemories = vidFiles.map((file, idx) => {
   let cleanTitle = file.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
   if (cleanTitle.length > 35) cleanTitle = cleanTitle.substring(0, 35) + '...';
 
-  const mins = String(Math.floor(Math.random() * 3) + 1).padStart(2, '0');
-  const secs = String(Math.floor(Math.random() * 50) + 10).padStart(2, '0');
+  let hash = 0;
+  for (let i = 0; i < file.length; i++) hash = (hash * 31 + file.charCodeAt(i)) % 10000;
+  const mins = String((hash % 3) + 1).padStart(2, '0');
+  const secs = String((hash % 50) + 10).padStart(2, '0');
 
   return {
     id: `vid-${idx + 1}`,
